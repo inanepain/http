@@ -1,0 +1,42 @@
+{
+	"name" : "inanepain/http",
+	"description" : "Http client, request and response objects implementing psr-7 (message interfaces).",
+	"type" : "library",
+	"license" : "UNLICENSE",
+	"authors" : [{
+			"name" : "Philip Michael Raab",
+			"email" : "peep@inane.co.za",
+			"role" : "Developer"
+		}
+	],
+	"homepage" : "http://inane.co.za",
+	"support" : {
+		"email" : "peep@inane.co.za",
+		"issues" : "http://inane.co.za"
+	},
+	"keywords" : [
+		"http",
+		"request",
+		"response",
+		"psr-7"
+	],
+	"autoload" : {
+		"psr-4" : {
+			"Inane\\Http\\" : "src/"
+		}
+	},
+	"config": {
+        "preferred-install" : "dist",
+		"optimize-autoloader" : true,
+		"discard-changes" : true,
+		"sort-packages": true
+    },
+	"minimum-stability" : "stable",
+	"prefer-stable": true,
+	"require" : {
+		"php" : ">=8.1",
+		"psr/http-message": "*"
+	},
+	"require-dev": {
+    }
+}
