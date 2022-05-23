@@ -20,10 +20,10 @@ declare(strict_types=1);
 
 namespace Inane\Http;
 
-use Inane\Config\Options;
 use Inane\Http\Exception\PropertyException;
 use Inane\Http\Request\AbstractRequest;
 use Inane\Inflection\Infector;
+use Inane\Stdlib\Options;
 
 /**
  * Request

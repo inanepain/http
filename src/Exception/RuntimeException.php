@@ -20,14 +20,14 @@ declare(strict_types=1);
 
 namespace Inane\Http\Exception;
 
-use RuntimeException as BaseRuntimeException;
+use Inane\Stdlib\Exception\RuntimeException as InaneRuntimeException;
 
 /**
  * RuntimeException
  *
  * @package Http
- * @version 0.2.0
+ * @version 0.3.0
  */
-class RuntimeException extends BaseRuntimeException {
+class RuntimeException extends InaneRuntimeException {
     protected $code = 700;
 }

@@ -20,14 +20,13 @@ declare(strict_types=1);
 
 namespace Inane\Http\Exception;
 
-use InvalidArgumentException as BaseInvalidArgumentException;
+use \Inane\Stdlib\Exception\InvalidArgumentException as InaneInvalidArgumentException;
 
 /**
  * InvalidArgumentException
  *
  * @package Http
- * @version 0.2.0
+ * @version 0.3.0
  */
-class InvalidArgumentException extends BaseInvalidArgumentException {
-    protected $code = 750;
+class InvalidArgumentException extends InaneInvalidArgumentException {
 }
