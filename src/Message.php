@@ -23,10 +23,15 @@ namespace Inane\Http;
 use Inane\Http\Exception\InvalidArgumentException;
 
 use function array_merge;
+use function array_pop;
 use function implode;
 use function is_int;
+use function is_string;
 use function strtolower;
 use function strval;
+use const false;
+use const null;
+use const true;
 
 use Psr\Http\Message\{
     MessageInterface,
@@ -183,10 +188,10 @@ class Message implements MessageInterface {
      *    the message, this method MUST return an empty string.
      */
     public function getHeaderLine($name): string {
-        $h = $this->getHeader($name);
-        $a = array_pop($h);
-        if (is_string($a)) $a = [$a];
-        return implode(', ', $a);
+        $header = $this->getHeader($name);
+        $value = array_pop($header);
+        if (is_string($value)) $value = [$value];
+        return implode(', ', $value);
     }
 
     /**
@@ -208,9 +213,9 @@ class Message implements MessageInterface {
         $normalized = strtolower($name);
 
         $new = clone $this;
-        if (isset($new->headerNames[$normalized])) {
+        if (isset($new->headerNames[$normalized]))
             unset($new->headers[$new->headerNames[$normalized]]);
-        }
+
         $new->headerNames[$normalized] = $name;
         $new->headers[$name] = $value;
 
@@ -266,7 +271,6 @@ class Message implements MessageInterface {
         if (!isset($this->headerNames[$normalized])) return $this;
 
         $name = $this->headerNames[$normalized];
-
         $new = clone $this;
         unset($new->headers[$name], $new->headerNames[$normalized]);
 

@@ -25,10 +25,19 @@ use Inane\Http\Request\AbstractRequest;
 use Inane\Inflection\Infector;
 use Inane\Stdlib\Options;
 
+use function array_keys;
+use function class_exists;
+use function in_array;
+use function is_null;
+use function str_starts_with;
+use const false;
+use const null;
+use const true;
+
 /**
  * Request
  *
- * @version 0.6.0
+ * @version 0.6.1
  *
  * @package Http
  */
@@ -114,7 +123,9 @@ class Request extends AbstractRequest {
      * @return void
      */
     public function __construct(bool $allowAllProperties = true, ?Response $response = null) {
-        parent::__construct();
+        $headers = apache_request_headers();
+        parent::__construct(null, null, $headers);
+
         $this->allowAllProperties = ($allowAllProperties === true);
         if (!is_null($response)) $this->response = $response;
         $this->bootstrapSelf();
