@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace Inane\Http;
 
-use Inane\Config\Options;
 use Inane\File\FileInfo;
 use SimpleXMLElement;
 use Stringable;
@@ -34,9 +33,10 @@ use const false;
 use const null;
 use const true;
 
-use Inane\Exception\{
-    BadMethodCallException,
-    UnexpectedValueException
+use Inane\Stdlib\{
+    Exception\BadMethodCallException,
+    Exception\UnexpectedValueException,
+    Options
 };
 use Psr\Http\Message\{
     RequestInterface,

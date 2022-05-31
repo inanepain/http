@@ -27,16 +27,16 @@ use function strtoupper;
 use const false;
 use const null;
 
-use Inane\Exception\{
-    BadMethodCallException,
-    UnexpectedValueException
-};
 use Inane\Http\{
     Exception\InvalidArgumentException,
     HttpMethod,
     Message,
     Stream,
     Uri
+};
+use Inane\Stdlib\Exception\{
+    BadMethodCallException,
+    UnexpectedValueException
 };
 use Psr\Http\Message\{
     RequestInterface,
