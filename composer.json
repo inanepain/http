@@ -36,8 +36,7 @@
 	"require" : {
 		"php" : ">=8.1",
 		"psr/http-message": "*",
-		"inanepain/stdlib": "*",
-		"inanepain/inane": ">=0.29.0 || dev-develop || dev-master"
+		"inanepain/stdlib": "*"
 	},
 	"require-dev": {
     }
