@@ -22,22 +22,23 @@ namespace Inane\Http;
 
 use Inane\Http\Exception\PropertyException;
 use Inane\Http\Request\AbstractRequest;
-use Inane\Inflection\Infector;
-use Inane\Stdlib\Options;
 
 use function array_keys;
-use function class_exists;
 use function in_array;
 use function is_null;
 use function str_starts_with;
-use const false;
 use const null;
 use const true;
+
+use Inane\Stdlib\{
+    String\Inflector,
+    Options
+};
 
 /**
  * Request
  *
- * @version 0.6.1
+ * @version 0.6.2
  *
  * @package Http
  */
@@ -165,7 +166,7 @@ class Request extends AbstractRequest {
     private function toCamelCase($string) {
         $result = str_replace(static::$propertyClean, '', strtolower($string));
 
-        return Infector::camelise($result);
+        return Inflector::camelise($result);
     }
 
     /**
