@@ -1,5 +1,7 @@
 # Readme: Http
 
+> $Id$ ($Date$)
+
 Http client, request and response objects implementing psr-7 (message interfaces).
 
 ## Install

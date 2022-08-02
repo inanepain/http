@@ -13,14 +13,14 @@
  * @license UNLICENSE
  * @license https://github.com/inanepain/http/raw/develop/UNLICENSE UNLICENSE
  *
- * @copyright 2013-2019 Philip Michael Raab <peep@inane.co.za>
+ * @version $Id$
+ * $Date$
  */
 
 declare(strict_types=1);
 
 namespace Inane\Http;
 
-use Inane\File\FileInfo;
 use SimpleXMLElement;
 use Stringable;
 
@@ -36,6 +36,7 @@ use const true;
 use Inane\Stdlib\{
     Exception\BadMethodCallException,
     Exception\UnexpectedValueException,
+    FileInfo,
     Options
 };
 use Psr\Http\Message\{
@@ -47,7 +48,7 @@ use Psr\Http\Message\{
 /**
  * Response
  *
- * @version 0.6.0
+ * @version 0.6.1
  *
  * @package Http
  */

@@ -13,7 +13,8 @@
  * @license UNLICENSE
  * @license https://github.com/inanepain/http/raw/develop/UNLICENSE UNLICENSE
  *
- * @copyright 2013-2019 Philip Michael Raab <peep@inane.co.za>
+ * @version $Id$
+ * $Date$
  */
 
 namespace Inane\Http\Exception;
