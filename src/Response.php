@@ -48,9 +48,9 @@ use Psr\Http\Message\{
 /**
  * Response
  *
- * @version 0.6.1
+ * @version 0.6.2
  *
- * @package Http
+ * @package Inane\Http
  */
 class Response extends Message implements ResponseInterface, Stringable {
     public static int $rm = 4;
@@ -102,10 +102,6 @@ class Response extends Message implements ResponseInterface, Stringable {
     public function withStatus($code, $reasonPhrase = '') { }
 
     public function getReasonPhrase() { }
-
-
-
-
 
     /**
      * set: request
@@ -384,13 +380,15 @@ class Response extends Message implements ResponseInterface, Stringable {
      */
     public function setFile($src_file, bool $force = false, int $speed = 0): self {
         $file = new FileInfo($src_file);
-        $this->_file = $file;
 
         if (!$file->isValid()) {
             $this->setStatus(HttpStatus::NotFound);
-            $this->setBody('file invalid:' . $this->_file->getPathname());
+            $this->setBody('file invalid:' . $file->getPathname());
             return $this;
         }
+
+        // only set file property once we know it's valid
+        $this->_file = $file;
 
         $this->setStatus(HttpStatus::Ok);
         $fileSize = $this->_file->getSize();
