@@ -4,7 +4,11 @@
 
 ## HISTORY
 
-### current: 0.1.3 (2022 Aug 02)
+### current: 0.1.4 (2022 Aug xx)
+
+-
+
+### 0.1.3 (2022 Aug 03)
 
 - request stringable as uri
 - added request::getHttpMethod: HttpMethod
