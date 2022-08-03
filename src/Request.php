@@ -23,6 +23,7 @@ namespace Inane\Http;
 
 use Inane\Http\Exception\PropertyException;
 use Inane\Http\Request\AbstractRequest;
+use Stringable;
 
 use function array_keys;
 use function in_array;
@@ -39,11 +40,11 @@ use Inane\Stdlib\{
 /**
  * Request
  *
- * @version 0.6.2
+ * @version 0.6.3
  *
- * @package Http
+ * @package Inane\Http
  */
-class Request extends AbstractRequest {
+class Request extends AbstractRequest implements Stringable {
     public const METHOD_COPY = 'COPY';
     public const METHOD_DELETE = 'DELETE';
     public const METHOD_GET = 'GET';
@@ -78,7 +79,7 @@ class Request extends AbstractRequest {
     /**
      * Response
      *
-     * @var Response
+     * @var \Inane\Http\Response
      */
     private Response $response;
 
@@ -131,6 +132,17 @@ class Request extends AbstractRequest {
         $this->allowAllProperties = ($allowAllProperties === true);
         if (!is_null($response)) $this->response = $response;
         $this->bootstrapSelf();
+    }
+
+    /**
+     * magic method: __toString
+     *
+     * @since 0.6.3
+     *
+     * @return string uri
+     */
+    public function __toString(): string {
+        return "{$this->getUri()}";
     }
 
     /**

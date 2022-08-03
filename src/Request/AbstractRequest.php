@@ -48,7 +48,7 @@ use Psr\Http\Message\{
 /**
  * Request
  *
- * @version 0.5.0
+ * @version 0.5.1
  *
  * @package Http
  */
@@ -194,11 +194,22 @@ class AbstractRequest extends Message implements RequestInterface {
     /**
      * Retrieves the HTTP method of the request.
      *
+     * @since 0.5.1
+     *
+     * @return \Inane\Http\HttpMethod Returns the request method.
+     */
+    public function getHttpMethod(): HttpMethod {
+        if (!isset($this->method)) $this->setMethod();
+        return $this->method;
+    }
+
+    /**
+     * Retrieves the HTTP method of the request.
+     *
      * @return string Returns the request method.
      */
     public function getMethod(): string {
-        if (!isset($this->method)) $this->setMethod();
-        return $this->method->value;
+        return $this->getHttpMethod()->value;
     }
 
     /**
