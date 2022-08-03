@@ -4,6 +4,11 @@
 
 ## HISTORY
 
+### current: 0.1.3 (2022 Aug 02)
+
+- request stringable as uri
+- added request::getHttpMethod: HttpMethod
+
 ### 0.1.2 (2022 Aug 02)
 
 - Fix: error on invalid file in response.
