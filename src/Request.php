@@ -26,6 +26,7 @@ use Inane\Http\Request\AbstractRequest;
 use Stringable;
 
 use function array_keys;
+use function function_exists;
 use function in_array;
 use function is_null;
 use function str_starts_with;
@@ -40,26 +41,16 @@ use Inane\Stdlib\{
 /**
  * Request
  *
- * @version 0.6.3
+ * @version 0.6.4
  *
  * @package Inane\Http
  */
 class Request extends AbstractRequest implements Stringable {
-    public const METHOD_COPY = 'COPY';
-    public const METHOD_DELETE = 'DELETE';
-    public const METHOD_GET = 'GET';
-    public const METHOD_LINK = 'LINK';
-    public const METHOD_LOCK = 'LOCK';
-    public const METHOD_OPTIONS = 'OPTIONS';
-    public const METHOD_PATCH = 'PATCH';
-    public const METHOD_POST = 'POST';
-    public const METHOD_PROPFIND = 'PROPFIND';
-    public const METHOD_PURGE = 'PURGE';
-    public const METHOD_PUT = 'PUT';
-    public const METHOD_UNLINK = 'UNLINK';
-    public const METHOD_UNLOCK = 'UNLOCK';
-    public const METHOD_VIEW = 'VIEW';
-
+    /**
+     * Limit properties to $magicPropertiesAllowed
+     *
+     * @var bool
+     */
     protected bool $allowAllProperties = true;
 
     /**
@@ -69,7 +60,12 @@ class Request extends AbstractRequest implements Stringable {
      */
     private Options $properties;
 
-    protected array $magicPropertiesAllowed = ['method'];
+    /**
+     * Limit properties to these
+     *
+     * @var string[]
+     */
+    private array $magicPropertiesAllowed = ['method'];
 
     /**
      * strings to remove from property names
@@ -100,7 +96,7 @@ class Request extends AbstractRequest implements Stringable {
      *
      * @var \Inane\Config\Options
      */
-    protected Options $post;
+    private Options $post;
 
     /**
      * magic method: __get
@@ -126,7 +122,7 @@ class Request extends AbstractRequest implements Stringable {
      * @return void
      */
     public function __construct(bool $allowAllProperties = true, ?Response $response = null) {
-        $headers = apache_request_headers();
+        $headers = function_exists('apache_request_headers') ? apache_request_headers() : [];
         parent::__construct(null, null, $headers);
 
         $this->allowAllProperties = ($allowAllProperties === true);

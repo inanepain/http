@@ -48,9 +48,9 @@ use Psr\Http\Message\{
 /**
  * Request
  *
- * @version 0.5.1
+ * @version 0.5.2
  *
- * @package Http
+ * @package Inane\Http
  */
 class AbstractRequest extends Message implements RequestInterface {
     /**
@@ -110,7 +110,7 @@ class AbstractRequest extends Message implements RequestInterface {
      */
     protected function setMethod(null|string|HttpMethod $method = null): self {
         if (!isset($this->method)) {
-            if (is_null($method)) $this->method = HttpMethod::tryFrom($_SERVER['REQUEST_METHOD']);
+            if (is_null($method)) $this->method = HttpMethod::tryFrom($_SERVER['REQUEST_METHOD'] ?? 'GET');
             else if (is_string($method)) $this->method = HttpMethod::tryFrom(strtoupper($method));
             else if ($method instanceof HttpMethod) $this->method = $method;
             else $this->method = HttpMethod::Get;
@@ -130,7 +130,7 @@ class AbstractRequest extends Message implements RequestInterface {
      */
     protected function setUri(null|string|UriInterface $uri = null): self {
         if (!isset($this->uri)) {
-            if (is_null($uri)) $uri = new Uri($_SERVER['REQUEST_URI']);
+            if (is_null($uri)) $uri = new Uri("{$_SERVER['REQUEST_URI']}");
             else if (!($uri instanceof Uri)) $uri = new Uri($uri);
             $this->uri = $uri;
         }

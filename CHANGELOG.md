@@ -6,7 +6,7 @@
 
 ### current: 0.1.4 (2022 Aug xx)
 
--
+- request: minor fixes in handling being used in a terminal environment
 
 ### 0.1.3 (2022 Aug 03)
 
