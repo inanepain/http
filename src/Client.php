@@ -49,7 +49,7 @@ use function usleep;
  * for mimetype updating
  *
  * @package Http
- * @version 1.7.1
+ * @version 1.7.2
  */
 class Client implements SplSubject {
     /**
@@ -227,7 +227,7 @@ class Client implements SplSubject {
      * @return void
      */
     protected function serveFile(Response $response): void {
-        $file = $response->getFileInfo();
+        $file = $response->getFile();
         $byte_from = $response->getDownloadFrom();
         $byte_to = (int)$response->getHeaderLine('Content-Length');
         $fp = fopen($file->getPathname(), 'r');

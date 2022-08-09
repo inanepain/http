@@ -4,5 +4,11 @@ Inane\Http:
 		✔ Psr\Stream @done(22-05-23 10:32)
 		✔ Psr\Uri @done(22-05-23 10:42)
 	- Delete depricated Psr classes
+	request:
+		wraps the current request by default or created to make remote call
+		- investigate current status
+	client:
+		handles messages
+		- send: needs to be able to send requests and return responses if applicable
 	requirments:
 		- inanepain/inane => Response uses FileInfo

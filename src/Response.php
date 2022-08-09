@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace Inane\Http;
 
+use Inane\File\File;
 use SimpleXMLElement;
 use Stringable;
 
@@ -36,7 +37,6 @@ use const true;
 use Inane\Stdlib\{
     Exception\BadMethodCallException,
     Exception\UnexpectedValueException,
-    FileInfo,
     Options
 };
 use Psr\Http\Message\{
@@ -47,6 +47,9 @@ use Psr\Http\Message\{
 
 /**
  * Response
+ *
+ * HTTP Response to a request.
+ * Generally with data in the body.
  *
  * @version 0.6.2
  *
@@ -88,7 +91,7 @@ class Response extends Message implements ResponseInterface, Stringable {
     /**
      * File to serve
      */
-    private FileInfo $_file;
+    private File $_file;
 
     /**
      * Response as string
@@ -304,11 +307,11 @@ class Response extends Message implements ResponseInterface, Stringable {
     }
 
     /**
-     * file info
+     * file
      *
-     * @return FileInfo
+     * @return File
      */
-    public function getFileInfo(): FileInfo {
+    public function getFile(): File {
         return $this->_file;
     }
 
@@ -369,7 +372,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      *
      * $speed 0 = no limit
      *
-     * @param mixed $src_file file
+     * @param null|string $src_file file
      * @param bool $force download, not view in browser
      * @param int $speed kbSec
      *
@@ -378,8 +381,8 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @throws UnexpectedValueException
      * @throws BadMethodCallException
      */
-    public function setFile($src_file, bool $force = false, int $speed = 0): self {
-        $file = new FileInfo($src_file);
+    public function setFile(?string $src_file, bool $force = false, int $speed = 0): self {
+        $file = new File($src_file);
 
         if (!$file->isValid()) {
             $this->setStatus(HttpStatus::NotFound);
