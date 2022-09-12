@@ -30,102 +30,351 @@ namespace Inane\Http;
  *  - 4xx: Client Error
  *  - 5xx: Server Error
  *
- * @version 1.0.0
+ * @version 1.0.1
  *
  * @package Http
  */
 enum HttpStatus {
         // 1xx Informational
+    /**
+     * 100
+     */
     case Continue;
+    /**
+     * 101
+     */
     case SwitchingProtocols;
+    /**
+     * 102
+     */
     case Processing;
 
         // 2xx Success
+    /**
+     * 200
+     */
     case Ok;
+    /**
+     * 201
+     */
     case Created;
+    /**
+     * 202
+     */
     case Accepted;
+    /**
+     * 203
+     */
     case NonAuthoritativeInformation;
+    /**
+     * 204
+     */
     case NoContent;
+    /**
+     * 205
+     */
     case ResetContent;
+    /**
+     * 206
+     */
     case PartialContent;
+    /**
+     * 207
+     */
     case MultiStatus;
+    /**
+     * 208
+     */
     case AlreadyReported;
+    /**
+     * 226
+     */
     case ImUsed;
 
         // 3xx Redirection
+    /**
+     * 300
+     */
     case MultipleChoices;
+    /**
+     * 301
+     */
     case MovedPermanently;
+    /**
+     * 302
+     */
     case Found;
+    /**
+     * 303
+     */
     case SeeOther;
+    /**
+     * 304
+     */
     case NotModified;
+    /**
+     * 305
+     */
     case UseProxy;
+    /**
+     * 306
+     */
     case SwitchProxy;
+    /**
+     * 307
+     */
     case TemporaryRedirect;
+    /**
+     * 308
+     */
     case PermanentRedirect;
+    /**
+     * 308
+     */
     case ResumeIncomplete;
 
         // 4xx Client Error
+    /**
+     * 400
+     */
     case BadRequest;
+    /**
+     * 401
+     */
     case Unauthorized;
+    /**
+     * 402
+     */
     case PaymentRequired;
+    /**
+     * 403
+     */
     case Forbidden;
+    /**
+     * 404
+     */
     case NotFound;
+    /**
+     * 405
+     */
     case MethodNotAllowed;
+    /**
+     * 406
+     */
     case NotAcceptable;
+    /**
+     * 407
+     */
     case ProxyAuthenticationRequired;
+    /**
+     * 408
+     */
     case RequestTimeout;
+    /**
+     * 409
+     */
     case Conflict;
+    /**
+     * 410
+     */
     case Gone;
+    /**
+     * 411
+     */
     case LengthRequired;
+    /**
+     * 412
+     */
     case PreconditionFailed;
+    /**
+     * 413
+     */
     case RequestEntityTooLarge;
+    /**
+     * 414
+     */
     case RequestUriTooLong;
+    /**
+     * 415
+     */
     case UnsupportedMediaType;
+    /**
+     * 416
+     */
     case RequestedRangeNotSatisfiable;
+    /**
+     * 417
+     */
     case ExpectationFailed;
+    /**
+     * 418
+     */
     case ImATeapot;
+    /**
+     * 421
+     */
     case MisdirectedRequest;
+    /**
+     * 422
+     */
     case UnprocessableEntity;
+    /**
+     * 423
+     */
     case Locked;
+    /**
+     * 424
+     */
     case FailedDependency;
+    /**
+     * 426
+     */
     case UpgradeRequired;
+    /**
+     * 428
+     */
     case PreconditionRequired;
+    /**
+     * 429
+     */
     case TooManyRequests;
+    /**
+     * 431
+     */
     case RequestHeaderFieldsTooLarge;
+    /**
+     * 440
+     */
     case LoginTimeout;
+    /**
+     * 444
+     */
     case NoResponse;
+    /**
+     * 449
+     */
     case RetryWith;
+    /**
+     * 450
+     */
     case BlockedByWindowsParentalControls;
+    /**
+     * 451
+     */
     case UnavailableForLegalReasons;
+    /**
+     * 451
+     */
     case Redirect;
+    /**
+     * 494
+     */
     case RequestHeaderTooLarge;
+    /**
+     * 495
+     */
     case CertError;
+    /**
+     * 496
+     */
     case NoCert;
+    /**
+     * 497
+     */
     case HttpToHttps;
+    /**
+     * 498
+     */
     case TokenExpiredInvalid;
+    /**
+     * 499
+     */
     case ClientClosedRequest;
+    /**
+     * 499
+     */
     case TokenRequired;
 
         // 5xx Server Error
+    /**
+     * 500
+     */
     case InternalServerError;
+    /**
+     * 501
+     */
     case NotImplemented;
+    /**
+     * 502
+     */
     case BadGateway;
+    /**
+     * 503
+     */
     case ServiceUnavailable;
+    /**
+     * 504
+     */
     case GatewayTimeout;
+    /**
+     * 505
+     */
     case HttpVersionNotSupported;
+    /**
+     * 506
+     */
     case VariantAlsoNegotiates;
+    /**
+     * 507
+     */
     case InsufficientStorage;
+    /**
+     * 508
+     */
     case LoopDetected;
+    /**
+     * 509
+     */
     case BandwidthLimitExceeded;
+    /**
+     * 510
+     */
     case NotExtended;
+    /**
+     * 511
+     */
     case NetworkAuthenticationRequired;
+    /**
+     * 520
+     */
     case UnknownError;
+    /**
+     * 521
+     */
     case WebServerIsDown;
+    /**
+     * 522
+     */
     case ConnectionTimedOut;
+    /**
+     * 523
+     */
     case OriginIsUnreachable;
+    /**
+     * 524
+     */
     case ATimeoutOccurred;
+    /**
+     * 525
+     */
     case SslHandshakeFailed;
+    /**
+     * 526
+     */
     case InvalidSslCertificate;
+    /**
+     * 527
+     */
     case RailgunError;
 
     /**

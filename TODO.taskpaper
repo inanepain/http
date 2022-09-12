@@ -4,6 +4,10 @@ Inane\Http:
 		✔ Psr\Stream @done(22-05-23 10:32)
 		✔ Psr\Uri @done(22-05-23 10:42)
 	- Delete depricated Psr classes
+	auth:
+		basic:
+			- New Task
+		digest:
 	request:
 		wraps the current request by default or created to make remote call
 		- investigate current status

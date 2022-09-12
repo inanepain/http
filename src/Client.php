@@ -20,11 +20,15 @@ declare(strict_types=1);
 
 namespace Inane\Http;
 
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestInterface;
 use SplObserver;
 use SplSubject;
+use Throwable;
 
 use function fclose;
 use function feof;
+use function file_get_contents;
 use function flush;
 use function fopen;
 use function fread;
@@ -32,6 +36,7 @@ use function fseek;
 use function header;
 use function http_response_code;
 use function is_array;
+use function method_exists;
 use function ob_end_flush;
 use function ob_flush;
 use function ob_get_level;
@@ -51,7 +56,7 @@ use function usleep;
  * @package Http
  * @version 1.7.2
  */
-class Client implements SplSubject {
+class Client implements SplSubject, ClientInterface {
     /**
      * SplObserver[] observers
      */
@@ -75,6 +80,36 @@ class Client implements SplSubject {
      * Client constructor
      */
     public function __construct() {
+    }
+
+    /**
+     * Sends a PSR-7 request and returns a PSR-7 response.
+     *
+     * @param RequestInterface $request
+     *
+     * @return Response
+     *
+     * @throws \Psr\Http\Client\ClientExceptionInterface If an error happens while processing the request.
+     */
+    public function sendRequest(RequestInterface $request): Response {
+        $response = new Response();
+        if ($request->getMethod() == 'GET') {
+            try {
+                $body = file_get_contents("{$request->getUri()}");
+                $response->setBody($body);
+                $response->setStatus(HttpStatus::Ok);
+            } catch (Throwable $th) {
+                $response->setBody('Error');
+                $response->setStatus(HttpStatus::UnknownError);
+            }
+        } else {
+            $response->setBody('Client does not support request type yet. Check for upgrades.');
+            $response->setStatus(HttpStatus::UpgradeRequired);
+        }
+
+        if (method_exists($request, 'setResponse')) $request->setResponse($response);
+
+        return $response;
     }
 
     /**
