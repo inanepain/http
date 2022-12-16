@@ -32,7 +32,7 @@ namespace Inane\Http;
  *
  * @version 1.0.1
  *
- * @package Http
+ * @package Inane\Http
  */
 enum HttpStatus {
         // 1xx Informational
@@ -684,7 +684,7 @@ enum HttpStatus {
             static::NonAuthoritativeInformation => 'Non authoritative information',
             static::NoContent => 'No content',
             static::ResetContent => 'Reset content',
-            static::PartialContent => 'HTTP/1.1 206 Patial Content', // FINAL
+            static::PartialContent => 'HTTP/1.1 206 Partial Content', // FINAL
             static::MultiStatus => 'MULTI Status',
             static::AlreadyReported => 'Already reported',
             static::ImUsed => 'Im used',

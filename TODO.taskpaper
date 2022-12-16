@@ -1,9 +1,9 @@
 Inane\Http:
-	✔ Merge redundent Psr classes with root classes @done(22-05-23 10:42)
+	✔ Merge redundant Psr classes with root classes @done(22-05-23 10:42)
 		✔ Psr\Message @done(22-05-23 10:29)
 		✔ Psr\Stream @done(22-05-23 10:32)
 		✔ Psr\Uri @done(22-05-23 10:42)
-	- Delete depricated Psr classes
+	- Delete deprecated Psr classes
 	auth:
 		basic:
 			- New Task
@@ -14,5 +14,5 @@ Inane\Http:
 	client:
 		handles messages
 		- send: needs to be able to send requests and return responses if applicable
-	requirments:
+	requirements:
 		- inanepain/inane => Response uses FileInfo

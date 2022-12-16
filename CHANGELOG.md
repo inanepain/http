@@ -4,9 +4,13 @@
 
 ## HISTORY
 
-### current: 0.1.4 (2022 Aug xx)
+### current: 0.1.4-dev (2022 Aug xx)
 
-- request: minor fixes in handling being used in a terminal environment
+- request: minor fixes in handling a terminal environment
+- doc: updates
+- update: removal of redundant classes
+- update: `Stream` remove dynamic property `$uri`
+- update: `Stream` add return types
 
 ### 0.1.3 (2022 Aug 03)
 

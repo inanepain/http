@@ -41,7 +41,7 @@ use Inane\Stdlib\{
 /**
  * Request
  *
- * @version 0.6.4
+ * @version 0.6.5
  *
  * @package Inane\Http
  */
@@ -138,7 +138,7 @@ class Request extends AbstractRequest implements Stringable {
      * @return string uri
      */
     public function __toString(): string {
-        return "{$this->getUri()}";
+        return $this->getUriString();
     }
 
     /**
@@ -255,5 +255,16 @@ class Request extends AbstractRequest implements Stringable {
     public function getFiles(): array {
         if (!isset($this->files)) $this->files = $_FILES;
         return $this->files;
+    }
+
+    /**
+     * get: uri as string
+     *
+     * @since 0.6.5
+     *
+     * @return string url
+     */
+    public function getUriString(): string {
+        return "{$this->getUri()}";
     }
 }

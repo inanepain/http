@@ -45,7 +45,7 @@ use Psr\Http\Message\{
  *
  * @version 0.6.2
  *
- * @package Http
+ * @package Inane\Http
  */
 class Message implements MessageInterface {
     /**#@+

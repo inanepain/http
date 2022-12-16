@@ -26,7 +26,7 @@ namespace Inane\Http\Request;
  *
  * @deprecated Use Psr\Http\Message\RequestInterface
  *
- * @package Http
+ * @package Inane\Http
  *
  * @version 0.5.0
  */

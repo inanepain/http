@@ -30,7 +30,7 @@ use Psr\Http\Message\RequestInterface;
  *
  * @version 0.5.0
  *
- * @package Http
+ * @package Inane\Http
  */
 interface IRequestAware {
     /**

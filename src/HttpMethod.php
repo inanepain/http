@@ -25,7 +25,7 @@ namespace Inane\Http;
  *
  * @version 0.9.0
  *
- * @package Http
+ * @package Inane\Http
  */
 enum HttpMethod: string {
     case Copy = 'COPY';

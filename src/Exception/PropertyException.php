@@ -26,7 +26,7 @@ use Inane\Stdlib\Exception\Exception;
  *
  * Adds Getters / Setters via magic get / set methods
  *
- * @package Exception
+ * @package Inane\Http\Exception
  * @version 0.1.0
  */
 class PropertyException extends Exception {

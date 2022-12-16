@@ -50,10 +50,9 @@ use function usleep;
  *
  * Sends Http messages
  *
- * @see /Users/philip/Temp/mime/mt.php
- * for mimetype updating
+ * @link file:///Users/philip/Temp/mime/mt.php for mimetype updating
  *
- * @package Http
+ * @package Inane\Http
  * @version 1.7.2
  */
 class Client implements SplSubject, ClientInterface {
