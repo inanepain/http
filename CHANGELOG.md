@@ -4,7 +4,7 @@
 
 ## HISTORY
 
-### current: 0.1.4-dev (2023 May 03)
+### 0.1.4 (2023 May 03)
 
 - request: minor fixes in handling a terminal environment
 - doc: updates
