@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace Inane\Http\Request;
 
+use function array_key_exists;
 use function is_null;
 use function is_string;
 use function preg_match;
@@ -48,7 +49,7 @@ use Psr\Http\Message\{
 /**
  * Request
  *
- * @version 0.5.2
+ * @version 0.5.3
  *
  * @package Inane\Http
  */
@@ -110,7 +111,7 @@ class AbstractRequest extends Message implements RequestInterface {
      */
     protected function setMethod(null|string|HttpMethod $method = null): self {
         if (!isset($this->method)) {
-            if (is_null($method)) $this->method = HttpMethod::tryFrom($_SERVER['REQUEST_METHOD'] ?? 'GET');
+            if (is_null($method)) $this->method = HttpMethod::tryFrom(array_key_exists('REQUEST_METHOD', $_SERVER) ? $_SERVER['REQUEST_METHOD'] : 'GET');
             else if (is_string($method)) $this->method = HttpMethod::tryFrom(strtoupper($method));
             else if ($method instanceof HttpMethod) $this->method = $method;
             else $this->method = HttpMethod::Get;
@@ -130,7 +131,7 @@ class AbstractRequest extends Message implements RequestInterface {
      */
     protected function setUri(null|string|UriInterface $uri = null): self {
         if (!isset($this->uri)) {
-            if (is_null($uri)) $uri = new Uri("{$_SERVER['REQUEST_URI']}");
+            if (is_null($uri)) $uri = new Uri(array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : '');
             else if (!($uri instanceof Uri)) $uri = new Uri($uri);
             $this->uri = $uri;
         }

@@ -52,6 +52,13 @@ class Request extends AbstractRequest implements Stringable {
      * @var bool
      */
     protected bool $allowAllProperties = true;
+    
+	/**
+	 * Accept header
+	 * 
+	 * @var string
+	 */
+	protected string $accept = '';
 
     /**
      * properties
