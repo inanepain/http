@@ -50,16 +50,27 @@ use const true;
 /**
  * AbstractStream
  *
- * @version 0.5.3
+ * @version 0.5.1
  *
- * @package Http
+ * @package Inane\Http
  */
 class Stream implements StreamInterface, Stringable {
+    /**
+     * readable modes
+     *
+     * @var string
+     */
     protected static string $readableModes = '/r|a\+|ab\+|w\+|wb\+|x\+|xb\+|c\+|cb\+/';
+
+    /**
+     * writable modes
+     *
+     * @var string
+     */
     protected static string $writableModes = '/a|w|r\+|rb\+|rw|x|c/';
 
     /** @var resource */
-    protected $stream;
+    protected mixed $stream;
 
     /** @var int|null */
     protected ?int $size = null;
@@ -78,13 +89,13 @@ class Stream implements StreamInterface, Stringable {
      *
      * if string a memory stream is created
      *
-     * @param mixed|null $source string or resource
+     * @param resource|string|null $source string or resource
      *
      * @return void
      *
-     * @throws RuntimeException
+     * @throws \Inane\Http\Exception\RuntimeException on error
      */
-    public function __construct($source = null) {
+    public function __construct(mixed $source = null) {
         if (is_resource($source)) $this->stream = $source;
         else {
             $this->stream = fopen('php://memory', 'r+');
@@ -95,6 +106,8 @@ class Stream implements StreamInterface, Stringable {
 
     /**
      * Closes the stream when the destructed
+     *
+     * @return void
      */
     public function __destruct() {
         $this->close();
@@ -114,6 +127,8 @@ class Stream implements StreamInterface, Stringable {
      * @see http://php.net/manual/en/language.oop5.magic.php#object.tostring
      *
      * @return string
+     *
+     * @throws \Throwable
      */
     public function __toString(): string {
         try {
@@ -131,7 +146,7 @@ class Stream implements StreamInterface, Stringable {
      *
      * @return void
      */
-    public function close() {
+    public function close(): void {
         if (isset($this->stream)) {
             if (is_resource($this->stream)) fclose($this->stream);
             $this->detach();
@@ -145,12 +160,13 @@ class Stream implements StreamInterface, Stringable {
      *
      * @return resource|null Underlying PHP stream, if any
      */
-    public function detach() {
+    public function detach(): mixed {
         if (!isset($this->stream)) return null;
 
         $result = $this->stream;
         unset($this->stream);
-        $this->size = $this->uri = null;
+        // $this->size = $this->uri = null;
+        $this->size = null;
         $this->readable = $this->writable = $this->seekable = false;
 
         return $result;
@@ -161,7 +177,7 @@ class Stream implements StreamInterface, Stringable {
      *
      * @return int|null Returns the size in bytes if known, or null if unknown.
      */
-    public function getSize() {
+    public function getSize(): ?int {
         if (is_null($this->size)) {
             $stat = fstat($this->stream);
             if ($stat) $this->size = $stat['size'];
@@ -191,7 +207,7 @@ class Stream implements StreamInterface, Stringable {
      *
      * @return bool
      */
-    public function eof() {
+    public function eof(): bool {
         if (isset($this->stream)) return feof($this->stream);
         return true;
     }
@@ -201,7 +217,7 @@ class Stream implements StreamInterface, Stringable {
      *
      * @return bool
      */
-    public function isSeekable() {
+    public function isSeekable(): bool {
         if (!isset($this->seekable)) $this->seekable = $this->getMetadata('seekable');
         return $this->seekable;
     }
@@ -218,9 +234,11 @@ class Stream implements StreamInterface, Stringable {
      *     offset bytes SEEK_CUR: Set position to current location plus offset
      *     SEEK_END: Set position to end-of-stream plus offset.
      *
-     * @throws RuntimeException on failure.
+     * @return void
+     *
+     * @throws \Inane\Http\Exception\RuntimeException  on failure.
      */
-    public function seek($offset, $whence = SEEK_SET) {
+    public function seek($offset, $whence = SEEK_SET): void {
         $whence = (int) $whence;
 
         if (!isset($this->stream)) throw new RuntimeException('Stream is detached');
@@ -238,9 +256,11 @@ class Stream implements StreamInterface, Stringable {
      *
      * @link http://www.php.net/manual/en/function.fseek.php
      *
-     * @throws RuntimeException on failure.
+     * @return void
+     *
+     * @throws \Inane\Http\Exception\RuntimeException  on failure.
      */
-    public function rewind() {
+    public function rewind(): void {
         if ($this->isSeekable()) $this->seek(0);
     }
 
@@ -249,7 +269,7 @@ class Stream implements StreamInterface, Stringable {
      *
      * @return bool
      */
-    public function isWritable() {
+    public function isWritable(): bool {
         if (!isset($this->writable)) $this->writable = (bool)preg_match(static::$writableModes, $this->getMetadata('mode'));
         return $this->writable;
     }
@@ -261,9 +281,9 @@ class Stream implements StreamInterface, Stringable {
      *
      * @return int Returns the number of bytes written to the stream.
      *
-     * @throws RuntimeException on failure.
+     * @throws \Inane\Http\Exception\RuntimeException on failure.
      */
-    public function write($string) {
+    public function write($string): int {
         if (!isset($this->stream)) throw new RuntimeException('Stream is detached');
         if (!$this->isWritable()) throw new RuntimeException('Cannot write to a non-writable stream');
 
@@ -281,7 +301,7 @@ class Stream implements StreamInterface, Stringable {
      *
      * @return bool
      */
-    public function isReadable() {
+    public function isReadable(): bool {
         if (!isset($this->readable)) $this->readable = (bool)preg_match(static::$readableModes, $this->getMetadata('mode'));
         return $this->readable;
     }
@@ -296,7 +316,7 @@ class Stream implements StreamInterface, Stringable {
      * @return string Returns the data read from the stream, or an empty string
      *     if no bytes are available.
      *
-     * @throws RuntimeException if an error occurs.
+     * @throws \Inane\Http\Exception\RuntimeException if an error occurs.
      */
     public function read($length): string {
         if (!isset($this->stream)) throw new RuntimeException('Stream is detached');
@@ -316,10 +336,9 @@ class Stream implements StreamInterface, Stringable {
      *
      * @return string
      *
-     * @throws RuntimeException if unable to read or an error occurs while
-     *     reading.
+     * @throws \Inane\Http\Exception\RuntimeException if unable to read or an error occurs while reading.
      */
-    public function getContents() {
+    public function getContents(): string {
         if (!isset($this->stream)) throw new RuntimeException('Stream is detached');
 
         $this->rewind();
@@ -340,11 +359,11 @@ class Stream implements StreamInterface, Stringable {
      *
      * @param string $key Specific metadata to retrieve.
      *
-     * @return array|mixed|null Returns an associative array if no key is
+     * @return array|bool|int|string|null Returns an associative array if no key is
      *     provided. Returns a specific key value if a key is provided and the
      *     value is found, or null if the key is not found.
      */
-    public function getMetadata($key = null) {
+    public function getMetadata($key = null): array|bool|int|string|null {
         if (!isset($this->stream)) return $key ? null : [];
 
         $meta = stream_get_meta_data($this->stream);

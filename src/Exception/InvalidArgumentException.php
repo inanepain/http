@@ -26,7 +26,7 @@ use \Inane\Stdlib\Exception\InvalidArgumentException as InaneInvalidArgumentExce
 /**
  * InvalidArgumentException
  *
- * @package Http
+ * @package Inane\Http
  * @version 0.3.0
  */
 class InvalidArgumentException extends InaneInvalidArgumentException {

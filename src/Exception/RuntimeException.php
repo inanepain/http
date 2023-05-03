@@ -26,7 +26,7 @@ use Inane\Stdlib\Exception\RuntimeException as InaneRuntimeException;
 /**
  * RuntimeException
  *
- * @package Http
+ * @package Inane\Http\Exception
  * @version 0.3.0
  */
 class RuntimeException extends InaneRuntimeException {

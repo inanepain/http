@@ -35,7 +35,7 @@ use function strtolower;
  *
  * @version 0.6.2
  *
- * @package Http
+ * @package Inane\Http
  */
 class Uri implements UriInterface {
     /**

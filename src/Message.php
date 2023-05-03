@@ -25,6 +25,7 @@ use Inane\Http\Exception\InvalidArgumentException;
 
 use function array_merge;
 use function array_pop;
+use function explode;
 use function implode;
 use function is_int;
 use function is_string;
@@ -42,9 +43,9 @@ use Psr\Http\Message\{
 /**
  * Message
  *
- * @version 0.6.1
+ * @version 0.6.2
  *
- * @package Http
+ * @package Inane\Http
  */
 class Message implements MessageInterface {
     /**#@+
@@ -166,7 +167,7 @@ class Message implements MessageInterface {
 
         $header = $this->headerNames[$header];
 
-        return [$header, $this->headers[$header]];
+        return $this->headers[$header];
     }
 
     /**
@@ -189,10 +190,8 @@ class Message implements MessageInterface {
      *    the message, this method MUST return an empty string.
      */
     public function getHeaderLine($name): string {
-        $header = $this->getHeader($name);
-        $value = array_pop($header);
-        if (is_string($value)) $value = [$value];
-        return implode(', ', $value);
+        $value = $this->getHeader($name);
+        return implode(',', $value);
     }
 
     /**
@@ -323,7 +322,7 @@ class Message implements MessageInterface {
                 $this->headers[$name] = array_merge($this->headers[$name], $value);
             } else {
                 $this->headerNames[$normalized] = $name;
-                $this->headers[$name] = $value;
+                $this->headers[$name] = [$value];
             }
         }
     }
