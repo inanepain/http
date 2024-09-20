@@ -43,7 +43,7 @@ use Psr\Http\Message\{
 /**
  * Message
  *
- * @version 0.6.2
+ * @version 0.6.3
  *
  * @package Inane\Http
  */
@@ -156,11 +156,11 @@ class Message implements MessageInterface {
      * empty array.
      *
      * @param string $name Case-insensitive header field name.
-     * @return string[] An array of string values as provided for the given
+     * @return string An array of string values as provided for the given
      *    header. If the header does not appear in the message, this method MUST
      *    return an empty array.
      */
-    public function getHeader($name): array|string {
+    public function getHeader(string $name): array {
         $header = strtolower($name);
 
         if (!isset($this->headerNames[$header])) return [];

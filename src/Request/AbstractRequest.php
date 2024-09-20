@@ -49,7 +49,7 @@ use Psr\Http\Message\{
 /**
  * Request
  *
- * @version 0.5.3
+ * @version 0.5.4
  *
  * @package Inane\Http
  */
@@ -213,24 +213,25 @@ class AbstractRequest extends Message implements RequestInterface {
         return $this->getHttpMethod()->value;
     }
 
-    /**
-     * Return an instance with the provided HTTP method.
-     *
-     * While HTTP method names are typically all uppercase characters, HTTP
-     * method names are case-sensitive and thus implementations SHOULD NOT
-     * modify the given string.
-     *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return an instance that has the
-     * changed request method.
-     *
-     * @param string $method Case-sensitive method.
-     *
-     * @return static
-     *
-     * @throws InvalidArgumentException for invalid HTTP methods.
-     */
-    public function withMethod($method) {
+	/**
+	 * Return an instance with the provided HTTP method.
+	 *
+	 * While HTTP method names are typically all uppercase characters, HTTP
+	 * method names are case-sensitive and thus implementations SHOULD NOT
+	 * modify the given string.
+	 *
+	 * This method MUST be implemented in such a way as to retain the
+	 * immutability of the message, and MUST return an instance that has the
+	 * changed request method.
+	 *
+	 * @param   string  $method  Case-sensitive method.
+	 *
+	 * @return RequestInterface
+	 *
+	 * @throws \Inane\Stdlib\Exception\BadMethodCallException
+	 * @throws \Inane\Stdlib\Exception\UnexpectedValueException
+	 */
+    public function withMethod(string $method): RequestInterface {
         $new = clone $this;
         $new->setMethod($method);
         return $new;

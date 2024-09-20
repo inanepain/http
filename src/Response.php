@@ -51,7 +51,7 @@ use Psr\Http\Message\{
  * HTTP Response to a request.
  * Generally with data in the body.
  *
- * @version 0.6.2
+ * @version 0.6.3
  *
  * @package Inane\Http
  */
@@ -71,7 +71,7 @@ class Response extends Message implements ResponseInterface, Stringable {
     /**
      * request
      */
-    protected Request $request;
+    protected RequestInterface $request;
 
     /**
      * sleep: bandwidth delay
@@ -102,9 +102,15 @@ class Response extends Message implements ResponseInterface, Stringable {
         return "{$this->getBody()}";
     }
 
-    public function withStatus($code, $reasonPhrase = '') { }
+    public function withStatus(int $code, string $reasonPhrase = ''): ResponseInterface {
+		$new = clone $this;
+		$new->setStatus($code);
+		return $new;
+    }
 
-    public function getReasonPhrase() { }
+    public function getReasonPhrase(): string {
+		return $this->getStatus()->message();
+    }
 
     /**
      * set: request
@@ -130,7 +136,7 @@ class Response extends Message implements ResponseInterface, Stringable {
     /**
      * Response
      *
-     * @param string|resource|StreamInterface|null $body    Request body
+     * @param string|StreamInterface|null $body    Request body
      * @param int|HttpStatus $status
      * @param array $headers headers
      *
@@ -139,7 +145,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @throws UnexpectedValueException
      * @throws BadMethodCallException
      */
-    public function __construct($body = null, int|HttpStatus $status = 200, array $headers = []) {
+    public function __construct(string|null|StreamInterface $body = null, int|HttpStatus $status = 200, array $headers = []) {
         if (!is_null($body)) {
             if (!($body instanceof StreamInterface)) $body = new Stream($body);
             $this->stream = $body;
@@ -168,7 +174,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @param SimpleXMLElement $xml_data
      * @return void
      */
-    protected function arrayToXml($data, SimpleXMLElement &$xml_data) {
+    protected function arrayToXml($data, SimpleXMLElement &$xml_data): void {
         foreach ($data as $key => $value) {
             if (is_array($value)) {
                 if (is_numeric($key)) $key = 'item' . $key;
@@ -246,8 +252,8 @@ class Response extends Message implements ResponseInterface, Stringable {
      *
      * @return int
      */
-    public function getStatusCode(): HttpStatus {
-        return $this->getStatus();
+    public function getStatusCode(): int {
+        return $this->getStatus()->code();
     }
 
     /**

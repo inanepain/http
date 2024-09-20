@@ -4,6 +4,10 @@
 
 ## HISTORY
 
+### current - 0.1.5 (2024 Sep xx)
+
+- update: to latest psr interface versions
+
 ### 0.1.4 (2023 May 03)
 
 - request: minor fixes in handling a terminal environment
