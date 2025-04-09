@@ -33,15 +33,12 @@ use function str_starts_with;
 use const null;
 use const true;
 
-use Inane\Stdlib\{
-    String\Inflector,
-    Options
-};
+use Inane\Stdlib\{Json, String\Inflector, Options};
 
 /**
  * Request
  *
- * @version 0.6.5
+ * @version 0.6.6
  *
  * @package Inane\Http
  */
@@ -218,13 +215,15 @@ class Request extends AbstractRequest implements Stringable {
     /**
      * Get POST data
      *
+     * @since 0.6.6 Checkes $_POST and php://input for data
+     *
      * @param null|string $param get specific param
      * @param null|string $default
      *
      * @return \Inane\Config\Options
      */
     public function getPost(?string $param = null, ?string $default = null): Options {
-        if (!isset($this->post)) $this->post = new Options($_POST ?? []);
+        if (!isset($this->post)) $this->post = new Options((count($_POST) > 0 ? $_POST : Json::decode(file_get_contents('php://input'))) ?? []);
 
         if (!is_null($param)) return $this->post->get($param, $default);
         return $this->post;

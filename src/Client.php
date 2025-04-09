@@ -217,7 +217,7 @@ class Client implements SplSubject, ClientInterface {
      * @param int $options flags
      * @return void
      */
-    public function send(Response $response): void {
+    public function send(Response $response): never {
         if ($response->isDownload()) $this->serveFile($response);
         else $this->sendResponse($response);
         exit(0);
