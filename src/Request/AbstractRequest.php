@@ -120,6 +120,37 @@ class AbstractRequest extends Message implements RequestInterface {
     }
 
     /**
+     * Builds and returns the origin part of a URL (scheme, host, and port) based on the provided server array.
+     *
+     * @param array $s The server array, typically $_SERVER, containing request information.
+     * @param bool $use_forwarded_host Optional. Whether to use the 'X-Forwarded-Host' header if present. Default is false.
+     *
+     * @return string The URL origin (e.g., "https://example.com:8080").
+     */
+    private static function urlOrigin(array $s, bool $use_forwarded_host = false): string {
+        $ssl      = (! empty($s['HTTPS']) && $s['HTTPS'] == 'on');
+        $sp       = strtolower($s['SERVER_PROTOCOL']);
+        $protocol = substr($sp, 0, strpos($sp, '/')) . (($ssl) ? 's' : '');
+        $port     = $s['SERVER_PORT'];
+        $port     = ((! $ssl && $port == '80') || ($ssl && $port == '443')) ? '' : ':' . $port;
+        $host     = ($use_forwarded_host && isset($s['HTTP_X_FORWARDED_HOST'])) ? $s['HTTP_X_FORWARDED_HOST'] : (isset($s['HTTP_HOST']) ? $s['HTTP_HOST'] : null);
+        $host     = isset($host) ? $host : $s['SERVER_NAME'] . $port;
+        return $protocol . '://' . $host;
+    }
+
+    /**
+     * Builds and returns the full URL based on the provided server parameters.
+     *
+     * @param array $s The server parameters, typically from $_SERVER.
+     * @param bool $use_forwarded_host Whether to use the forwarded host (from HTTP headers) instead of the direct host.
+     *
+     * @return string The constructed full URL.
+     */
+    private static function fullUrl(array $s, bool $use_forwarded_host = false): string {
+        return static::urlOrigin($s, $use_forwarded_host) . $s['REQUEST_URI'];
+    }
+
+    /**
      * setUri
      *
      * @param null|string|UriInterface $uri uri
@@ -131,7 +162,7 @@ class AbstractRequest extends Message implements RequestInterface {
      */
     protected function setUri(null|string|UriInterface $uri = null): self {
         if (!isset($this->uri)) {
-            if (is_null($uri)) $uri = new Uri(array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : '');
+            if (is_null($uri)) $uri = new Uri(static::fullUrl($_SERVER));
             else if (!($uri instanceof Uri)) $uri = new Uri($uri);
             $this->uri = $uri;
         }
@@ -213,24 +244,24 @@ class AbstractRequest extends Message implements RequestInterface {
         return $this->getHttpMethod()->value;
     }
 
-	/**
-	 * Return an instance with the provided HTTP method.
-	 *
-	 * While HTTP method names are typically all uppercase characters, HTTP
-	 * method names are case-sensitive and thus implementations SHOULD NOT
-	 * modify the given string.
-	 *
-	 * This method MUST be implemented in such a way as to retain the
-	 * immutability of the message, and MUST return an instance that has the
-	 * changed request method.
-	 *
-	 * @param   string  $method  Case-sensitive method.
-	 *
-	 * @return RequestInterface
-	 *
-	 * @throws \Inane\Stdlib\Exception\BadMethodCallException
-	 * @throws \Inane\Stdlib\Exception\UnexpectedValueException
-	 */
+    /**
+     * Return an instance with the provided HTTP method.
+     *
+     * While HTTP method names are typically all uppercase characters, HTTP
+     * method names are case-sensitive and thus implementations SHOULD NOT
+     * modify the given string.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * changed request method.
+     *
+     * @param   string  $method  Case-sensitive method.
+     *
+     * @return RequestInterface
+     *
+     * @throws \Inane\Stdlib\Exception\BadMethodCallException
+     * @throws \Inane\Stdlib\Exception\UnexpectedValueException
+     */
     public function withMethod(string $method): RequestInterface {
         $new = clone $this;
         $new->setMethod($method);

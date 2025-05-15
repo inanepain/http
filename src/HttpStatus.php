@@ -30,7 +30,7 @@ namespace Inane\Http;
  *  - 4xx: Client Error
  *  - 5xx: Server Error
  *
- * @version 1.0.1
+ * @version 1.1.0
  *
  * @package Inane\Http
  */
@@ -226,6 +226,10 @@ enum HttpStatus {
      * 424
      */
     case FailedDependency;
+	/**
+	 * 425
+	 */
+	case TooEarly;
     /**
      * 426
      */
@@ -430,6 +434,7 @@ enum HttpStatus {
             422 => static::UnprocessableEntity,
             423 => static::Locked,
             424 => static::FailedDependency,
+            424 => static::TooEarly,
             426 => static::UpgradeRequired,
             428 => static::PreconditionRequired,
             429 => static::TooManyRequests,
@@ -527,6 +532,7 @@ enum HttpStatus {
             static::UnprocessableEntity => 422,
             static::Locked => 423,
             static::FailedDependency => 424,
+            static::TooEarly => 425,
             static::UpgradeRequired => 426,
             static::PreconditionRequired => 428,
             static::TooManyRequests => 429,
@@ -624,6 +630,7 @@ enum HttpStatus {
             static::UnprocessableEntity => 'The request was formatted correctly but cannot be processed in its current form. Often used when the specified parameters fail validation errors.',
             static::Locked => 'The requested resource was found but has been locked and will not be returned.',
             static::FailedDependency => 'The request failed due to a failure of a previous request.',
+            static::TooEarly => 'Indicates that the server is unwilling to risk processing a request that might be replayed.',
             static::UpgradeRequired => 'The client should repeat the request using an upgraded protocol such as TLS 1.0.',
             static::PreconditionRequired => 'The origin server requires the request to be conditional.',
             static::TooManyRequests => 'The user has sent too many requests in a given amount of time ("rate limiting").',
@@ -723,6 +730,7 @@ enum HttpStatus {
             static::UnprocessableEntity => 'Unprocessable entity',
             static::Locked => 'Locked',
             static::FailedDependency => 'Failed dependency',
+            static::TooEarly => 'Too early',
             static::UpgradeRequired => 'Upgrade required',
             static::PreconditionRequired => 'Precondition required',
             static::TooManyRequests => 'Too many requests',

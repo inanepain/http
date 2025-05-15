@@ -7,6 +7,7 @@
 ### current - 0.1.5 (2024 Sep xx)
 
 - update: to latest psr interface versions
+- fix   : `AbstractRequest` now parses uri correctly (get complete url not just path) when none supplied
 
 ### 0.1.4 (2023 May 03)
 
