@@ -16,6 +16,7 @@
  * @version $Id$
  * $Date$
  */
+
 declare(strict_types=1);
 
 namespace Inane\Http;

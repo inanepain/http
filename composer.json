@@ -46,7 +46,11 @@
     "scripts": {
         "mk-doc-dir": [
             "mkdir -p doc/{changelog,readme}",
-            "mkdir doc/changelog/release"
+            "mkdir doc/changelog/release",
+            "mkdir doc/readme/part",
+            "touch doc/{changelog,readme}/index.adoc",
+            "touch doc/changelog/release/0.0.0.adoc",
+            "touch doc/readme/part/install.adoc"
         ],
         "build": [
             "@build-changelog",
