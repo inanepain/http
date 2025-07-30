@@ -1,7 +1,7 @@
 # ![icon](./icon.png) inanepain/http
 
-Http client, request and response objects implementing psr-7 (message
-interfaces).
+Http client (psr-18), request and response object message interfaces
+(psr-7).
 
 # Install
 

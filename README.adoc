@@ -1,8 +1,8 @@
 = README: Inanepain/http
 :author: Philip Michael Raab
 :email: <philip@cathedral.co.za>
-:description: Http client, request and response objects implementing psr-7 (message interfaces).
-:keywords: inanepain, library, http, request, response, psr-7
+:description: Http client (psr-18), request and response object message interfaces (psr-7).
+:keywords: inane, inanepain, library, http, client, request, response, serve, psr-7, psr-18
 :copyright: Unlicense
 :homepage: https://git.cathedral.co.za:3000/inanepain/http
 :revnumber: 0.1.4

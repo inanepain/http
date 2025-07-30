@@ -18,9 +18,13 @@
     },
     "keywords": [
         "inane",
+        "inanepain",
+        "library",
         "http",
+        "client",
         "request",
         "response",
+        "serve",
         "psr-7",
         "psr-18"
     ],

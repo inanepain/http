@@ -8,10 +8,18 @@ Version: $Id$ ($Date$)
 
 ### current changes
 
-- update: to latest psr interface versions
+- `Client::sendRequest` works correctly now
+
+- `Client` file serve improvements
+
+- 'Request' & `Response` generally improvements all over
+
+- update: to latest `psr` interface versions
 
 - fix : `AbstractRequest` now parses uri correctly (get complete url not
   just path) when none supplied
+
+- moved to new document structure
 
 ## 0.1.4 (2023 May 03)
 
