@@ -1,20 +1,23 @@
 <?php
 
 /**
- * Inane\Http
+ * Inane: Http
  *
- * Http
+ * Http client, request and response objects implementing psr-7 (message interfaces).
  *
- * PHP version 8.1
+ * $Id$
+ * $Date$
  *
- * @package Inane\Http
- * @author Philip Michael Raab<peep@inane.co.za>
+ * PHP version 8.4
+ *
+ * @author Philip Michael Raab<philip@cathedral.co.za>
+ * @package inanepain\http
+ * @category http
  *
  * @license UNLICENSE
- * @license https://github.com/inanepain/http/raw/develop/UNLICENSE UNLICENSE
+ * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $Id$
- * $Date$
+ * @version $version
  */
 
 namespace Inane\Http\Exception;

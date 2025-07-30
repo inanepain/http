@@ -1,32 +1,42 @@
 <?php
 
 /**
- * Inane\Http
+ * Inane: Http
  *
- * Http
+ * Http client, request and response objects implementing psr-7 (message interfaces).
  *
- * PHP version 8.1
+ * $Id$
+ * $Date$
  *
- * @package Inane\Http
- * @author Philip Michael Raab<peep@inane.co.za>
+ * PHP version 8.4
+ *
+ * @author Philip Michael Raab<philip@cathedral.co.za>
+ * @package inanepain\http
+ * @category http
  *
  * @license UNLICENSE
- * @license https://github.com/inanepain/http/raw/develop/UNLICENSE UNLICENSE
+ * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $Id$
- * $Date$
+ * @version $version
  */
 
 declare(strict_types=1);
 
 namespace Inane\Http;
 
+use Deprecated;
+use Inane\File\File;
 use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestInterface;
 use SplObserver;
 use SplSubject;
 use Throwable;
+use Psr\Http\Message\{
+    RequestInterface,
+    ResponseInterface
+};
 
+use function class_exists;
+use function explode;
 use function fclose;
 use function feof;
 use function file_get_contents;
@@ -36,14 +46,19 @@ use function fread;
 use function fseek;
 use function header;
 use function http_response_code;
+use function implode;
+use function ini_set;
 use function is_array;
-use function method_exists;
 use function ob_end_flush;
 use function ob_flush;
 use function ob_get_level;
 use function ob_start;
+use function preg_match;
 use function round;
 use function set_time_limit;
+use function stream_context_create;
+use function strpos;
+use function trim;
 use function usleep;
 
 /**
@@ -54,9 +69,10 @@ use function usleep;
  * @link file:///Users/philip/Temp/mime/mt.php for mimetype updating
  *
  * @package Inane\Http
- * @version 1.7.2
+ * @version 1.8.0
  */
 class Client implements SplSubject, ClientInterface {
+    #region PROPERTIES
     /**
      * SplObserver[] observers
      */
@@ -67,19 +83,86 @@ class Client implements SplSubject, ClientInterface {
      *
      * @var int
      */
-    protected int $_progress = 0;
+    protected int $servProgress = 0;
 
     /**
      * File size served %
      *
      * @var int
      */
-    protected int $_percent = 0;
+    protected int $servPercent = 0;
+
+    /**
+     * File served
+     *
+     * @var File
+     */
+    protected File $servfile;
+    #endregion PROPERTIES
 
     /**
      * Client constructor
      */
     public function __construct() {
+    }
+
+    /**
+     * Creates a stream context resource based on the provided HTTP request.
+     *
+     * This method generates and configures a context for use with stream-based HTTP operations,
+     * using the details from the given RequestInterface instance.
+     *
+     * @param RequestInterface $request The HTTP request object containing request details.
+     * 
+     * @return resource The created stream context resource.
+     */
+    protected function createContext(RequestInterface $request) {
+        // create headers
+        $headers = [];
+        foreach ($request->getHeaders() as $name => $values)
+            $headers[] = "$name: " . implode(', ', $values);
+
+        // create options
+        $opts = [
+            'http' => [
+                'method' => $request->getMethod(),
+                'header' => $headers,
+            ],
+        ];
+
+        try {
+            $body = $request->getBody()->getContents();
+        } catch (\Throwable $th) {
+            $body = null;
+        }
+
+        // add the body if found
+        if ($body) $opts['http']['content'] = $body;
+
+        // Create stream context
+        return stream_context_create($opts);
+    }
+
+    /**
+     * Parses and returns the global response headers from the HTTP response.
+     *
+     * @return array{0: int, 1: array<string, string>} An array containing: statusCode and the parsed global response headers.
+     */
+    protected function parseGlobalResponseHeaders(): array {
+        // Parse headers
+        $statusLine = $http_response_header[0] ?? 'HTTP/1.1 000 Unknown';
+        preg_match('{HTTP/\S+ (\d+)}', $statusLine, $match);
+        $statusCode = isset($match[1]) ? (int)$match[1] : 0;
+
+        $headers = [];
+        foreach ($http_response_header as $headerLine) {
+            if (strpos($headerLine, ':') !== false) {
+                [$key, $value] = explode(':', $headerLine, 2);
+                $headers[trim($key)] = trim($value);
+            }
+        }
+
+        return [$statusCode, $headers];
     }
 
     /**
@@ -92,26 +175,28 @@ class Client implements SplSubject, ClientInterface {
      * @throws \Psr\Http\Client\ClientExceptionInterface If an error happens while processing the request.
      */
     public function sendRequest(RequestInterface $request): Response {
+        /**
+         * @var Request $request
+         */
         $response = new Response();
-        if ($request->getMethod() == 'GET') {
-            try {
-                $body = file_get_contents("{$request->getUri()}");
-                $response->setBody($body);
-                $response->setStatus(HttpStatus::Ok);
-            } catch (Throwable $th) {
-                $response->setBody('Error');
-                $response->setStatus(HttpStatus::UnknownError);
-            }
-        } else {
-            $response->setBody('Client does not support request type yet. Check for upgrades.');
-            $response->setStatus(HttpStatus::UpgradeRequired);
-        }
 
-        if (method_exists($request, 'setResponse')) $request->setResponse($response);
+        try {
+            // make the request
+            $body = file_get_contents((string)$request->getUri(), false, $this->createContext($request));
+            [$statusCode, $headers] = $this->parseGlobalResponseHeaders();
+
+            // set the response
+            $response = new Response($body, $statusCode, $headers);
+            $response->setRequest($request);
+        } catch (Throwable $th) {
+            $response->setBody('Error: ' . $th->getMessage());
+            $response->setStatus(HttpStatus::UnknownError);
+        }
 
         return $response;
     }
 
+    #region EVENTS
     /**
      * Attach Observer
      *
@@ -151,7 +236,9 @@ class Client implements SplSubject, ClientInterface {
         foreach ($this->observers as $obs)
             $obs->update($this);
     }
+    #endregion EVENTS
 
+    #region PROGRESS
     /**
      * Progress of transfer
      *
@@ -164,9 +251,9 @@ class Client implements SplSubject, ClientInterface {
      */
     public function getProgress(): array {
         return [
-            'filename' => $this->_file->getFilename(),
-            'progress' => $this->_progress,
-            'total' => $this->_file->getSize()
+            'filename' => $this->servfile->getFilename(),
+            'progress' => $this->servProgress,
+            'total' => $this->servfile->getSize()
         ];
     }
 
@@ -179,26 +266,30 @@ class Client implements SplSubject, ClientInterface {
      * @return self
      */
     protected function updateProgress(int $progress, int $fileSize): self {
-        $this->_progress += $progress;
-        if ($this->_progress > $fileSize)
-            $this->_progress = $fileSize;
+        $this->servProgress += $progress;
+        if ($this->servProgress > $fileSize)
+            $this->servProgress = $fileSize;
 
-        $percent = round($this->_progress / $fileSize * 100, 0);
-        if ($percent != $this->_percent) {
+        $percent = round($this->servProgress / $fileSize * 100, 0);
+        if ($percent != $this->servPercent) {
             $this->notify();
-            $this->_percent = $percent;
+            $this->servPercent = (int)$percent;
         }
         return $this;
     }
+    #endregion PROGRESS
 
     /**
      * send headers
      *
-     * @param Response $response
+     * @param ResponseInterface $response
      *
      * @return void
      */
-    protected function sendHeaders(Response $response): void {
+    protected function sendHeaders(ResponseInterface $response): void {
+        /**
+         * @var Response $response
+         */
         if ($response->getStatus() == HttpStatus::PartialContent || $response->getStatus() == HttpStatus::Ok)
             header($response->getStatus()->message());
 
@@ -214,25 +305,31 @@ class Client implements SplSubject, ClientInterface {
     /**
      * serve response
      *
-     * @param Response $response response
+     * @param ResponseInterface $response response
      * @param int $options flags
+     * 
      * @return void
      */
-    public function send(Response $response): never {
+    public function send(ResponseInterface $response): never {
+        /**
+         * @var Response $response
+         */
         if ($response->isDownload()) $this->serveFile($response);
         else $this->sendResponse($response);
         exit(0);
     }
 
     /**
-     * Fetch request
-     *
-     * @param Request $request
-     *
+     * Sends the given HTTP request and returns the corresponding response.
+     * 
+     * @deprecated 1.8.0 Please use `sendRequest`: a far more complete method.
+     * 
      * @since 1.7.0
      *
-     * @return Response
+     * @param Request $request The HTTP request to be sent.
+     * @return Response The response received from the server.
      */
+    #[Deprecated(message: 'Please use `sendRequest`: a far more complete method.', since: '1.8.0')]
     public function fetch(Request $request): Response {
         $uri = $request->getUri();
 
@@ -244,64 +341,79 @@ class Client implements SplSubject, ClientInterface {
     /**
      * send response
      *
-     * @param Response $response
+     * @param ResponseInterface $response
+     * 
      * @return void
      */
-    protected function sendResponse(Response $response): void {
+    protected function sendResponse(ResponseInterface $response): void {
+        /**
+         * @var Response $response
+         */
         $this->sendHeaders($response);
         echo $response->getBody();
     }
 
     /**
-     * serve file
+     * Sends data read from the provided file pointer in chunks.
+     * 
+     * Buffered streaming which restricts the transfer speed to the limit specified by `Response::setBandwidth`.
      *
-     * stream file content
-     *
-     * @param Response $response
+     * @param ResponseInterface $response The response object containing the meta data to send.
+     * @param resource $fp The file pointer resource from which the buffer will be read.
      *
      * @return void
      */
-    protected function serveFile(Response $response): void {
-        $file = $response->getFile();
+    protected function sendBuffer(ResponseInterface $response, $fp): void {
+        /**
+         * @var Response $response
+         */
+        if (ob_get_level() == 0) ob_start();
+        $this->sendHeaders($response);
+        $sleep = $response->getSleep();
+        $chunkSize = 16 * 1024; // 16 KB
+        $download_size = (int)$response->getHeaderLine('Content-Length');
+
+        while (!feof($fp)) {
+            set_time_limit(0);
+            print(fread($fp, $chunkSize));
+            ob_flush();
+            flush();
+            $this->updateProgress($chunkSize, $download_size);
+            usleep($sleep);
+        }
+        ob_end_flush();
+        $this->updateProgress(1, $download_size);
+    }
+
+    /**
+     * Serves a file in the HTTP response.
+     *
+     * This method handles the process of sending a file to the client
+     * using the provided ResponseInterface instance.
+     *
+     * @param ResponseInterface $response The HTTP response object used to serve the file.
+     *
+     * @return void
+     */
+    protected function serveFile(ResponseInterface $response): void {
+        /**
+         * @var Response $response
+         */
+        $this->servfile = $response->getFile();
         $byte_from = $response->getDownloadFrom();
         $byte_to = (int)$response->getHeaderLine('Content-Length');
-        $fp = fopen($file->getPathname(), 'r');
+        $fp = fopen($this->servfile->getPathname(), 'r');
         fseek($fp, $byte_from);
-        $this->_progress = $byte_from;
+        $this->servProgress = $byte_from;
+
+        ini_set('memory_limit', '-1'); // unlimited
+
+        // if Dumper exists, lets disable it.
+        if (class_exists('\Inane\Dumper\Dumper')) \Inane\Dumper\Dumper::$enabled = false;
 
         if ($response->isThrottled()) $this->sendBuffer($response, $fp);
         else $this->sendResponse($response->setBody(fread($fp, $byte_to)));
 
         fclose($fp);
-    }
-
-    /**
-     * send buffered file
-     *
-     * Buffered streaming to restrict
-     *  the transfer speed to specified limit
-     *
-     * @param Response $response
-     * @param resource $fp
-     *
-     * @return void
-     */
-    protected function sendBuffer(Response $response, $fp): void {
-        if (ob_get_level() == 0) ob_start();
-        $this->sendHeaders($response);
-        $sleep = $response->getSleep();
-        $buffer_size = 1024 * 8; // 8kb
-        $download_size = (int)$response->getHeaderLine('Content-Length');
-
-        while (!feof($fp)) {
-            set_time_limit(0);
-            print(fread($fp, $buffer_size));
-            ob_flush();
-            flush();
-            $this->updateProgress($buffer_size, $download_size);
-            usleep($sleep);
-        }
-        ob_end_flush();
-        $this->updateProgress(1, $download_size);
     }
 }

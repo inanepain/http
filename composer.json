@@ -1,10 +1,10 @@
 {
     "name": "inanepain/http",
-    "description": "Http client, request and response objects implementing psr-7 (message interfaces).",
+    "description": "Http client (psr-18), request and response object message interfaces (psr-7).",
     "type": "library",
     "license": "Unlicense",
-    "homepage": "https://github.com/inanepain/http",
-    "readme": "README.md",
+    "homepage": "https://git.cathedral.co.za:3000/inanepain/http",
+    "readme": "README.adoc",
     "authors": [
         {
             "name": "Philip Michael Raab",
@@ -14,14 +14,15 @@
     ],
     "support": {
         "email": "philip@cathedral.co.za",
-        "issues": "https://github.com/inanepain"
+        "issues": "https://git.cathedral.co.za:3000/inanepain/http/issues"
     },
     "keywords": [
         "inane",
         "http",
         "request",
         "response",
-        "psr-7"
+        "psr-7",
+        "psr-18"
     ],
     "autoload": {
         "psr-4": {
@@ -36,7 +37,7 @@
     },
     "minimum-stability": "dev",
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.4",
         "psr/http-message": "*",
         "psr/http-client": "*",
         "inanepain/file": ">=0.1.0 || dev-master || dev-develop",
@@ -46,8 +47,8 @@
     "scripts": {
         "mk-doc-dir": [
             "mkdir -p doc/{changelog,readme}",
-            "mkdir doc/changelog/release",
-            "mkdir doc/readme/part",
+            "mkdir -p doc/changelog/release",
+            "mkdir -p doc/readme/part",
             "touch doc/{changelog,readme}/index.adoc",
             "touch doc/changelog/release/0.0.0.adoc",
             "touch doc/readme/part/install.adoc"
@@ -57,20 +58,20 @@
             "@build-readme"
         ],
         "build-changelog": [
-            "del CHANGELOG.adoc",
+            "rm -f CHANGELOG.adoc",
             "asciidoctor-reducer -o CHANGELOG.adoc doc/changelog/index.adoc",
             "asciidoctor -b docbook CHANGELOG.adoc",
-            "del CHANGELOG.md",
+            "rm -f CHANGELOG.md",
             "pandoc -f docbook -t markdown_strict CHANGELOG.xml -o CHANGELOG.md",
-            "del CHANGELOG.xml"
+            "rm -f CHANGELOG.xml"
         ],
         "build-readme": [
-            "del README.adoc",
+            "rm -f README.adoc",
             "asciidoctor-reducer -o README.adoc doc/readme/index.adoc",
             "asciidoctor -b docbook README.adoc",
-            "del README.md",
+            "rm -f README.md",
             "pandoc -f docbook -t markdown_strict README.xml -o README.md",
-            "del README.xml"
+            "rm -f README.xml"
         ]
     }
 }

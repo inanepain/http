@@ -1,20 +1,23 @@
 <?php
 
 /**
- * Inane\Http
+ * Inane: Http
  *
- * Http
+ * Http client, request and response objects implementing psr-7 (message interfaces).
  *
- * PHP version 8.1
+ * $Id$
+ * $Date$
  *
- * @package Inane\Http
- * @author Philip Michael Raab<peep@inane.co.za>
+ * PHP version 8.4
+ *
+ * @author Philip Michael Raab<philip@cathedral.co.za>
+ * @package inanepain\http
+ * @category http
  *
  * @license UNLICENSE
- * @license https://github.com/inanepain/http/raw/develop/UNLICENSE UNLICENSE
+ * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $Id$
- * $Date$
+ * @version $version
  */
 
 declare(strict_types=1);
@@ -98,7 +101,7 @@ class Request extends AbstractRequest implements Stringable {
     /**
      * Post data
      *
-     * @var \Inane\Config\Options
+     * @var \Inane\Stdlib\Options
      */
     private Options $post;
 
@@ -120,13 +123,18 @@ class Request extends AbstractRequest implements Stringable {
         return $this->properties->offsetGet($property, null);
     }
 
+    
     /**
-     * Response
-     * @param bool $allowAllProperties
-     * @return void
+     * Constructs a new Request instance.
+     *
+     * @param bool $allowAllProperties Determines if all properties are allowed.
+     * @param Response|null $response Optional response object associated with the request.
+     * @param array|null $headers Optional array of headers to include in the request.
      */
-    public function __construct(bool $allowAllProperties = true, ?Response $response = null) {
-        $headers = function_exists('apache_request_headers') ? apache_request_headers() : [];
+    public function __construct(bool $allowAllProperties = true, ?Response $response = null, ?array $headers = null) {
+        if ($headers === null)
+            $headers = function_exists('apache_request_headers') ? apache_request_headers() : [];
+
         parent::__construct(null, null, $headers);
 
         $this->allowAllProperties = ($allowAllProperties === true);
@@ -149,13 +157,14 @@ class Request extends AbstractRequest implements Stringable {
      * Create a Request from $url
      *
      * @param string $url target url
+     * @param array|null $headers Optional array of headers to include in the request.
      *
      * @since 0.6.0
      *
      * @return static the Request
      */
-    public static function fromUrl(string $url): static {
-        $r = new static();
+    public static function fromUrl(string $url, ?array $headers = null): static {
+        $r = new static(headers: $headers);
         $r = $r->withUri(new Uri($url));
         return $r;
     }
@@ -220,7 +229,7 @@ class Request extends AbstractRequest implements Stringable {
      * @param null|string $param get specific param
      * @param null|string $default
      *
-     * @return \Inane\Config\Options
+     * @return \Inane\Stdlib\Options
      */
     public function getPost(?string $param = null, ?string $default = null): Options {
         if (!isset($this->post)) $this->post = new Options((count($_POST) > 0 ? $_POST : Json::decode(file_get_contents('php://input'))) ?? []);

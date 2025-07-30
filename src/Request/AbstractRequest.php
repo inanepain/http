@@ -1,20 +1,23 @@
 <?php
 
 /**
- * Inane\Http
+ * Inane: Http
  *
- * Http
+ * Http client, request and response objects implementing psr-7 (message interfaces).
  *
- * PHP version 8.1
+ * $Id$
+ * $Date$
  *
- * @package Inane\Http
- * @author Philip Michael Raab<peep@inane.co.za>
+ * PHP version 8.4
+ *
+ * @author Philip Michael Raab<philip@cathedral.co.za>
+ * @package inanepain\http
+ * @category http
  *
  * @license UNLICENSE
- * @license https://github.com/inanepain/http/raw/develop/UNLICENSE UNLICENSE
+ * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $Id$
- * $Date$
+ * @version $version
  */
 
 declare(strict_types=1);
@@ -110,12 +113,11 @@ class AbstractRequest extends Message implements RequestInterface {
      * @throws BadMethodCallException BadMethodCallException
      */
     protected function setMethod(null|string|HttpMethod $method = null): self {
-        if (!isset($this->method)) {
-            if (is_null($method)) $this->method = HttpMethod::tryFrom(array_key_exists('REQUEST_METHOD', $_SERVER) ? $_SERVER['REQUEST_METHOD'] : 'GET');
-            else if (is_string($method)) $this->method = HttpMethod::tryFrom(strtoupper($method));
+        if ($method) {
+            if (is_string($method)) $this->method = HttpMethod::tryFrom(strtoupper($method));
             else if ($method instanceof HttpMethod) $this->method = $method;
             else $this->method = HttpMethod::Get;
-        }
+        } elseif (!isset($this->method)) $this->method = HttpMethod::tryFrom(array_key_exists('REQUEST_METHOD', $_SERVER) ? $_SERVER['REQUEST_METHOD'] : 'GET');
         return $this;
     }
 

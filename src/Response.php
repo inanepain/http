@@ -1,20 +1,23 @@
 <?php
 
 /**
- * Inane\Http
+ * Inane: Http
  *
- * Http
+ * Http client, request and response objects implementing psr-7 (message interfaces).
  *
- * PHP version 8.1
+ * $Id$
+ * $Date$
  *
- * @package Inane\Http
- * @author Philip Michael Raab<peep@inane.co.za>
+ * PHP version 8.4
+ *
+ * @author Philip Michael Raab<philip@cathedral.co.za>
+ * @package inanepain\http
+ * @category http
  *
  * @license UNLICENSE
- * @license https://github.com/inanepain/http/raw/develop/UNLICENSE UNLICENSE
+ * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $Id$
- * $Date$
+ * @version $version
  */
 
 declare(strict_types=1);
@@ -24,19 +27,10 @@ namespace Inane\Http;
 use Inane\File\File;
 use SimpleXMLElement;
 use Stringable;
-
-use function htmlspecialchars;
-use function in_array;
-use function is_null;
-use function is_numeric;
-use function json_encode;
-use const false;
-use const null;
-use const true;
-
 use Inane\Stdlib\{
     Exception\BadMethodCallException,
     Exception\UnexpectedValueException,
+    Json,
     Options
 };
 use Psr\Http\Message\{
@@ -44,6 +38,13 @@ use Psr\Http\Message\{
     ResponseInterface,
     StreamInterface
 };
+
+use function htmlspecialchars;
+use function in_array;
+use function is_null;
+use function is_numeric;
+
+use const null;
 
 /**
  * Response
@@ -74,7 +75,9 @@ class Response extends Message implements ResponseInterface, Stringable {
     protected RequestInterface $request;
 
     /**
-     * sleep: bandwidth delay
+     * Number of seconds to delay the response between buffered output.
+     *
+     * @var int $_sleep microseconds
      */
     protected int $_sleep = 0;
 
@@ -99,17 +102,17 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @return string
      */
     public function __toString(): string {
-        return "{$this->getBody()}";
+        return (string)$this->getBody();
     }
 
     public function withStatus(int $code, string $reasonPhrase = ''): ResponseInterface {
-		$new = clone $this;
-		$new->setStatus($code);
-		return $new;
+        $new = clone $this;
+        $new->setStatus($code);
+        return $new;
     }
 
     public function getReasonPhrase(): string {
-		return $this->getStatus()->message();
+        return $this->getStatus()->message();
     }
 
     /**
@@ -275,7 +278,7 @@ class Response extends Message implements ResponseInterface, Stringable {
     public function getContents(): string {
         $body = $this->getBody()->getContents();
         if (in_array($this->getHeaderLine('Content-Type'), ['application/json', '*/*']))
-            return json_encode($body);
+            return Json::encode($body);
         else if (in_array($this->getHeaderLine('Content-Type'), ['application/xml'])) {
             $xml = new SimpleXMLElement('<root/>');
             $this->arrayToXml($body, $xml);
@@ -331,29 +334,38 @@ class Response extends Message implements ResponseInterface, Stringable {
     }
 
     /**
-     * sleep between buffers
+     * sleep delay between buffers
      *
-     * @return int
+     * @return int microseconds
      */
     public function getSleep(): int {
         return $this->_sleep;
     }
 
     /**
-     * Sets download limit 0 = unlimited
+     * Sets download limit (0 = unlimited).
      *
-     * This is a rough kb/s speed. But very rough
+     * This is a rough kb/s speed (But very rough!).
      *
-     * @param  $kbSec
+     * @param  $kbps
+     * 
      * @return Response
      */
-    protected function setBandwidth(int $kbSec = 0): self {
-        if (static::$rm > 0) $kbSec = $kbSec / static::$rm;
-        $_sleep = $kbSec * 4.3;
-        if ($_sleep > 0)
-            $_sleep = (8 / $_sleep) * 1e6;
+    protected function setBandwidth(int $kbps = 0): self {
+        if ($kbps > 0) {
+            // $bytesPerSecond = ($kbps * 1024) / 8;
+            // $bytesPerSecond = ($kbps * 1024);
+            $bytesPerSecond = ($kbps * 1024) / static::$rm;
+            $chunkSize = 16 * 1024; // 16 KB
+            $this->_sleep = (int)(($chunkSize / $bytesPerSecond) * 1_000_000);
+        } else $this->_sleep = 0;
 
-        $this->_sleep = (int) $_sleep;
+        // if (static::$rm > 0) $kbps = $kbps / static::$rm;
+        // $_sleep = $kbps * 4.3;
+        // if ($_sleep > 0)
+        //     $_sleep = (8 / $_sleep) * 1e6;
+
+        // $this->_sleep = (int) $_sleep;
 
         return $this;
     }
@@ -365,12 +377,18 @@ class Response extends Message implements ResponseInterface, Stringable {
      *
      * @return int kbSec
      */
-    public function getBandwidth(?int $sleep = null): int {
-        if (is_null($sleep)) $sleep = $this->getSleep();
-        if ($sleep > 0)
-            $sleep = (8 / ($sleep / 1e6)) / 4.3;
-        if (static::$rm > 0) $sleep = $sleep * static::$rm;
-        return $sleep;
+    public function getBandwidth(): int {
+        $chunkSize = 16 * 1024; // 16 KB
+        $bytesPerSecond = $chunkSize / ($this->_sleep / 1_000_000);
+        return ($bytesPerSecond * static::$rm) / 1024;
+        // return ($bytesPerSecond * 8) / 1024;
+        // return ($bytesPerSecond) / 1024;
+
+        // if (is_null($sleep)) $sleep = $this->getSleep();
+        // if ($sleep > 0)
+        //     $sleep = (8 / ($sleep / 1e6)) / 4.3;
+        // if (static::$rm > 0) $sleep = $sleep * static::$rm;
+        // return $sleep;
     }
 
     /**

@@ -1,0 +1,14 @@
+= 0.1.5-dev (2025 Aug XX)
+:author: Philip Michael Raab
+:email: <philip@cathedral.co.za>
+:revnumber: 0.0.0
+:revdate: 2025-07-31
+
+== current changes
+
+* `Client::sendRequest` works correctly now
+* `Client` file serve improvements
+* 'Request' & `Response` generally improvements all over
+* update: to latest `psr` interface versions
+* fix : `AbstractRequest` now parses uri correctly (get complete url not just path) when none supplied
+* moved to new document structure
