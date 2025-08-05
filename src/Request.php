@@ -52,13 +52,13 @@ class Request extends AbstractRequest implements Stringable {
      * @var bool
      */
     protected bool $allowAllProperties = true;
-    
-	/**
-	 * Accept header
-	 * 
-	 * @var string
-	 */
-	protected string $accept = '';
+
+    /**
+     * Accept header
+     * 
+     * @var string
+     */
+    protected string $accept = '';
 
     /**
      * properties
@@ -123,7 +123,7 @@ class Request extends AbstractRequest implements Stringable {
         return $this->properties->offsetGet($property, null);
     }
 
-    
+
     /**
      * Constructs a new Request instance.
      *
@@ -280,6 +280,6 @@ class Request extends AbstractRequest implements Stringable {
      * @return string url
      */
     public function getUriString(): string {
-        return "{$this->getUri()}";
+        return (string)$this->getUri();
     }
 }
