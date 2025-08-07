@@ -44,8 +44,8 @@
         "php": ">=8.4",
         "psr/http-message": "*",
         "psr/http-client": "*",
-        "inanepain/file": ">=0.1.0 || dev-master || dev-develop",
-        "inanepain/stdlib": ">=0.1.4 || dev-master || dev-develop"
+        "inanepain/file": ">=0.3.0 || dev-master || dev-develop",
+        "inanepain/stdlib": ">=0.6.0 || dev-master || dev-develop"
     },
     "require-dev": {},
     "scripts": {

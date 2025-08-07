@@ -5,8 +5,8 @@
 :keywords: inane, inanepain, library, http, client, request, response, serve, psr-7, psr-18
 :copyright: Unlicense
 :homepage: https://git.cathedral.co.za:3000/inanepain/http
-:revnumber: 0.1.4
-:revdate: 2023-05-03
+:revnumber: 0.2.0
+:revdate: 2025-08-07
 :experimental:
 :doctype: book
 :hide-uri-scheme:
@@ -26,13 +26,11 @@ Version: $Id$ ($Date$)
 
 :leveloffset: +2
 
-= 0.1.5-dev (2025 Aug XX)
+= 0.2.0 (2025 Aug 07)
 :author: Philip Michael Raab
 :email: <philip@cathedral.co.za>
-:revnumber: 0.0.0
-:revdate: 2025-07-31
-
-== current changes
+:revnumber: 0.2.0
+:revdate: 2025-08-07
 
 * `Client::sendRequest` works correctly now
 * `Client` file serve improvements
@@ -40,6 +38,7 @@ Version: $Id$ ($Date$)
 * update: to latest `psr` interface versions
 * fix : `AbstractRequest` now parses uri correctly (get complete url not just path) when none supplied
 * moved to new document structure
+* bring back inline with **psr**
 
 :leveloffset!:
 :leveloffset: +2

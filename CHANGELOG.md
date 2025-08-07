@@ -4,9 +4,7 @@ Version: $Id$ ($Date$)
 
 # History
 
-## 0.1.5-dev (2025 Aug XX)
-
-### current changes
+## 0.2.0 (2025 Aug 07)
 
 - `Client::sendRequest` works correctly now
 
@@ -20,6 +18,8 @@ Version: $Id$ ($Date$)
   just path) when none supplied
 
 - moved to new document structure
+
+- bring back inline with **psr**
 
 ## 0.1.4 (2023 May 03)
 
