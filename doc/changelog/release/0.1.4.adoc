@@ -1,0 +1,13 @@
+= 0.1.4 (2023 May 03)
+:author: Philip Michael Raab
+:email: <philip@cathedral.co.za>
+:revnumber: 0.1.4
+:revdate: 2023-05-03
+
+* request: minor fixes in handling a terminal environment
+* doc: updates
+* update: removal of redundant classes
+* update: `Stream` remove dynamic property `$uri`
+* update: `Stream` add return types
+* fix: `AbstractRequest` check for null values
+* fix: `Request` create properties explicitly (no longer uses dynamic properties)

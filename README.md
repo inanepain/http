@@ -1,18 +1,17 @@
-# Readme: Http
+# ![icon](./icon.png) inanepain/http
 
-> $Id$ ($Date$)
+Http client (psr-18), request and response object message interfaces
+(psr-7).
 
-Http client, request and response objects implementing psr-7 (message interfaces).
+# Install
 
-## Install
+composer
 
-`composer require inanepain/http`
+    composer require inanepain/http
 
-## Usage
+# Usage
 
-```php
-$client = new \Inane\Http\Client();
-$response = new \Inane\Http\Response();
-$response->setBody('{"title":"Example"}');
-$client->send($response);
-```
+    $client = new \Inane\Http\Client();
+    $response = new \Inane\Http\Response();
+    $response->setBody('{"title":"Example"}');
+    $client->send($response);

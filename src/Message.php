@@ -1,20 +1,23 @@
 <?php
 
 /**
- * Inane\Http
+ * Inane: Http
  *
- * Http
+ * Http client, request and response objects implementing psr-7 (message interfaces).
  *
- * PHP version 8.1
+ * $Id$
+ * $Date$
  *
- * @package Inane\Http
- * @author Philip Michael Raab<peep@inane.co.za>
+ * PHP version 8.4
+ *
+ * @author Philip Michael Raab<philip@cathedral.co.za>
+ * @package inanepain\http
+ * @category http
  *
  * @license UNLICENSE
- * @license https://github.com/inanepain/http/raw/develop/UNLICENSE UNLICENSE
+ * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $Id$
- * $Date$
+ * @version $version
  */
 
 declare(strict_types=1);
@@ -43,7 +46,7 @@ use Psr\Http\Message\{
 /**
  * Message
  *
- * @version 0.6.2
+ * @version 0.6.3
  *
  * @package Inane\Http
  */
@@ -58,7 +61,7 @@ class Message implements MessageInterface {
 
     /**
      * message headers
-     * @var string[][]
+     * @var array<string, string[]>
      */
     protected array $headers = [];
 
@@ -126,7 +129,7 @@ class Message implements MessageInterface {
      * While header names are not case-sensitive, getHeaders() will preserve the
      * exact case in which headers were originally specified.
      *
-     * @return string[][] Returns an associative array of the message's headers. Each
+     * @return array<string, string[]> Returns an associative array of the message's headers. Each
      *     key MUST be a header name, and each value MUST be an array of strings
      *     for that header.
      */
@@ -156,11 +159,11 @@ class Message implements MessageInterface {
      * empty array.
      *
      * @param string $name Case-insensitive header field name.
-     * @return string[] An array of string values as provided for the given
+     * @return string An array of string values as provided for the given
      *    header. If the header does not appear in the message, this method MUST
      *    return an empty array.
      */
-    public function getHeader($name): array|string {
+    public function getHeader(string $name): array {
         $header = strtolower($name);
 
         if (!isset($this->headerNames[$header])) return [];
@@ -217,7 +220,7 @@ class Message implements MessageInterface {
             unset($new->headers[$new->headerNames[$normalized]]);
 
         $new->headerNames[$normalized] = $name;
-        $new->headers[$name] = $value;
+        $new->headers[$name] = \is_array($value) ? $value : [$value];
 
         return $new;
     }

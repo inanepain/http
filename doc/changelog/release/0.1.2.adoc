@@ -1,0 +1,8 @@
+= 0.1.2 (2022 Aug 02)
+:author: Philip Michael Raab
+:email: <philip@cathedral.co.za>
+:revnumber: 0.1.2
+:revdate: 2022-08-02
+
+* Fix: error on invalid file in response.
+* Update dependency inanepain/stdlib:0.1.4 to fix mime parsing error
