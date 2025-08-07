@@ -33,10 +33,13 @@ use function function_exists;
 use function in_array;
 use function is_null;
 use function str_starts_with;
+use function array_any;
+use function strtolower;
 use const null;
 use const true;
 
 use Inane\Stdlib\{Json, String\Inflector, Options};
+use Psr\Http\Message\UriInterface;
 
 /**
  * Request
@@ -124,18 +127,46 @@ class Request extends AbstractRequest implements Stringable {
     }
 
 
-    /**
-     * Constructs a new Request instance.
-     *
-     * @param bool $allowAllProperties Determines if all properties are allowed.
-     * @param Response|null $response Optional response object associated with the request.
-     * @param array|null $headers Optional array of headers to include in the request.
-     */
-    public function __construct(bool $allowAllProperties = true, ?Response $response = null, ?array $headers = null) {
-        if ($headers === null)
-            $headers = function_exists('apache_request_headers') ? apache_request_headers() : [];
+    // /**
+    //  * Constructs a new Request instance.
+    //  *
+    //  * @param bool $allowAllProperties Determines if all properties are allowed.
+    //  * @param Response|null $response Optional response object associated with the request.
+    //  * @param array|null $headers Optional array of headers to include in the request.
+    //  */
+    // public function __construct(bool $allowAllProperties = true, ?Response $response = null, ?array $headers = null) {
 
-        parent::__construct(null, null, $headers);
+    /**
+     * Request
+     *
+     * @param null|string|HttpMethod               $method              HTTP method
+     * @param null|string|UriInterface             $uri                 URI
+     * @param array<string, string|string[]>       $headers             Request headers
+     * @param string|resource|StreamInterface|null $body                Request body
+     * @param string|null                          $version             Protocol version
+     * @param bool                                 $allowAllProperties  Determines if all properties are allowed.
+     * @param Response|null                        $response            Optional response object associated with the request.
+     * @param bool                                 $importApacheHeaders Import headers from `apache_request_headers`.
+     */
+    public function __construct(
+        null|string|HttpMethod $method = null,
+        null|string|UriInterface $uri = null,
+        array $headers = [],
+        $body = null,
+        ?string $version = null,
+        bool $allowAllProperties = true,
+        ?Response $response = null,
+        bool $importApacheHeaders = false
+    ) {
+        if ($importApacheHeaders) {
+            foreach (function_exists('apache_request_headers') ? apache_request_headers() : [] as $header => $value) {
+                if (!array_any($headers, function (string|array $v, string $k) use ($header) {
+                    return strtolower($k) === strtolower($header);
+                })) $headers[$header] = $value;
+            }
+        }
+
+        parent::__construct($method, $uri, $headers, $body, $version);
 
         $this->allowAllProperties = ($allowAllProperties === true);
         if (!is_null($response)) $this->response = $response;
@@ -156,17 +187,15 @@ class Request extends AbstractRequest implements Stringable {
     /**
      * Create a Request from $url
      *
-     * @param string $url target url
-     * @param array|null $headers Optional array of headers to include in the request.
+     * @param string $url     target url
+     * @param array  $headers Optional array of headers to include in the request.
      *
      * @since 0.6.0
      *
      * @return static the Request
      */
-    public static function fromUrl(string $url, ?array $headers = null): static {
-        $r = new static(headers: $headers);
-        $r = $r->withUri(new Uri($url));
-        return $r;
+    public static function fromUrl(string $url, array $headers = []): static {
+        return new static(uri: $url, headers: $headers);
     }
 
     /**

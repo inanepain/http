@@ -132,7 +132,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @return Request request
      */
     public function getRequest(): Request {
-        if (!isset($this->request)) $this->request = new Request(true, $this);
+        if (!isset($this->request)) $this->request = new Request(allowAllProperties: true, response: $this);
         return $this->request;
     }
 

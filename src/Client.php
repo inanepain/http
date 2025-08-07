@@ -155,7 +155,7 @@ class Client implements SplSubject, ClientInterface {
         $statusCode = isset($match[1]) ? (int)$match[1] : 0;
 
         $headers = [];
-        foreach ($http_response_header as $headerLine) {
+        foreach ($http_response_header ?? [] as $headerLine) {
             if (strpos($headerLine, ':') !== false) {
                 [$key, $value] = explode(':', $headerLine, 2);
                 $headers[trim($key)] = trim($value);
