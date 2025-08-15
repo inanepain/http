@@ -7,7 +7,7 @@ Http client (psr-18), request and response object message interfaces
 
 composer
 
-    composer require inanepain/http
+composer require inanepain/http
 
 # Usage
 

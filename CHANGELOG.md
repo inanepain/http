@@ -1,7 +1,3 @@
-# 
-
-Version: $Id$ ($Date$)
-
 # History
 
 ## 0.2.0 (2025 Aug 07)

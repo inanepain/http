@@ -1,4 +1,4 @@
-= README: Inanepain/http
+= README: inanepain/http
 :author: Philip Michael Raab
 :email: <philip@cathedral.co.za>
 :description: Http client (psr-18), request and response object message interfaces (psr-7).
@@ -8,7 +8,6 @@
 :revnumber: 0.2.0
 :revdate: 2025-08-07
 :experimental:
-:doctype: book
 :hide-uri-scheme:
 :icons: font
 :source-highlighter: highlight.js
@@ -32,9 +31,9 @@
 
 .composer
 [source,shell]
-----
-composer require inanepain/http
-----
+====
+composer require {pkg-id}
+====
 
 :leveloffset!:
 
