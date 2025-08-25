@@ -17,7 +17,7 @@
  * @license UNLICENSE
  * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $version
+ * _version_ $version
  */
 
 declare(strict_types=1);
@@ -28,8 +28,6 @@ namespace Inane\Http\Request;
  * iRequest
  *
  * @deprecated Use Psr\Http\Message\RequestInterface
- *
- * @package Inane\Http
  *
  * @version 0.5.0
  */

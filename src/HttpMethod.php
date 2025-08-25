@@ -17,8 +17,9 @@
  * @license UNLICENSE
  * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $version
+ * _version_ $version
  */
+
 declare(strict_types=1);
 
 namespace Inane\Http;
@@ -27,8 +28,6 @@ namespace Inane\Http;
  * HttpMethod
  *
  * @version 0.9.0
- *
- * @package Inane\Http
  */
 enum HttpMethod: string {
     case Copy = 'COPY';

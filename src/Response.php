@@ -17,7 +17,7 @@
  * @license UNLICENSE
  * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $version
+ * _version_ $version
  */
 
 declare(strict_types=1);
@@ -53,8 +53,6 @@ use const null;
  * Generally with data in the body.
  *
  * @version 0.6.3
- *
- * @package Inane\Http
  */
 class Response extends Message implements ResponseInterface, Stringable {
     public static int $rm = 4;

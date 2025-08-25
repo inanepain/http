@@ -17,7 +17,7 @@
  * @license UNLICENSE
  * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $version
+ * _version_ $version
  */
 
 namespace Inane\Http\Exception;
@@ -28,8 +28,7 @@ use Inane\Stdlib\Exception\Exception;
  * PropertyException
  *
  * Adds Getters / Setters via magic get / set methods
- *
- * @package Inane\Http\Exception
+ * 
  * @version 0.1.0
  */
 class PropertyException extends Exception {

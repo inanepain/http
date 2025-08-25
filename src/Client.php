@@ -17,7 +17,7 @@
  * @license UNLICENSE
  * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $version
+ * _version_ $version
  */
 
 declare(strict_types=1);
@@ -67,8 +67,7 @@ use function usleep;
  * Sends Http messages
  *
  * @link file:///Users/philip/Temp/mime/mt.php for mimetype updating
- *
- * @package Inane\Http
+ * 
  * @version 1.8.0
  */
 class Client implements SplSubject, ClientInterface {
