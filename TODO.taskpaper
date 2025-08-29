@@ -1,18 +1,2 @@
-Inane\Http:
-	✔ Merge redundant Psr classes with root classes @done(22-05-23 10:42)
-		✔ Psr\Message @done(22-05-23 10:29)
-		✔ Psr\Stream @done(22-05-23 10:32)
-		✔ Psr\Uri @done(22-05-23 10:42)
-	- Delete deprecated Psr classes
-	auth:
-		basic:
-			- New Task
-		digest:
-	request:
-		wraps the current request by default or created to make remote call
-		- investigate current status
-	client:
-		handles messages
-		- send: needs to be able to send requests and return responses if applicable
-	requirements:
-		- inanepain/inane => Response uses FileInfo
+inanepain/http:
+  Http client (psr-18), request and response object message interfaces (psr-7).
