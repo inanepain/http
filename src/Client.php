@@ -24,8 +24,10 @@ declare(strict_types=1);
 
 namespace Inane\Http;
 
+use CURLFile;
 use Deprecated;
 use Inane\File\File;
+use Inane\Stdlib\Exception\RuntimeException;
 use Psr\Http\Client\ClientInterface;
 use SplObserver;
 use SplSubject;
@@ -165,6 +167,121 @@ class Client implements SplSubject, ClientInterface {
     }
 
     /**
+     * PHP cURL Request Handler - Flexible HTTP Client
+     *
+     * Features:
+     * - Supports GET/POST/PUT/DELETE/etc. methods
+     * - Custom headers (e.g., Authorization, Content-Type)
+     * - Body data (JSON/form) or file uploads (multipart)
+     * - Returns response body, status code, and headers
+     * - Error handling with verbose output
+     *
+     * Usage:
+     *   $response = curlRequest($url, $method, $headers, $bodyOrFile);
+     *
+     * @author Grok PHP cURL Library
+     * @version 1.0.0
+     */
+
+    protected function curlRequest(
+        string $url,
+        string $method = 'GET',
+        array $headers = [],
+        $bodyOrFile = null,  // string/array for body; array with 'file' for upload
+        bool $verifySsl = true
+    ): array {
+        $ch = curl_init();
+
+        // Basic setup
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HEADER => true,
+            CURLOPT_MAXREDIRS => 3,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_SSL_VERIFYPEER => $verifySsl,
+            CURLOPT_SSL_VERIFYHOST => $verifySsl ? 2 : 0,
+            CURLOPT_USERAGENT => 'PHP-cURL/1.0',
+        ]);
+
+        // Method handling
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
+
+        // Headers
+        if (!empty($headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array_map(function ($h) {
+                return is_string($h) ? $h : "{$h['name']}: {$h['value']}";
+            }, $headers));
+        }
+
+        // Body or file
+        if ($bodyOrFile !== null) {
+            if (is_array($bodyOrFile) && isset($bodyOrFile['file'])) {
+                // Multipart file upload (e.g., ['file' => ['path' => '/file.txt', 'name' => 'upload.txt']])
+                $postFields = [];
+                foreach ($bodyOrFile as $key => $data) {
+                    if ($key === 'file') {
+                        $postFields[$data['name']] = new CURLFile($data['path'], mime_content_type($data['path']), $data['name']);
+                    } else {
+                        $postFields[$key] = $data;
+                    }
+                }
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+                curl_setopt($ch, CURLOPT_POST, true);
+            } else {
+                // Raw body (string/JSON/array)
+                if (is_array($bodyOrFile)) {
+                    $bodyOrFile = json_encode($bodyOrFile);  // Auto-JSON
+                    $headers[] = ['name' => 'Content-Type', 'value' => 'application/json'];
+                }
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $bodyOrFile);
+                if (strtoupper($method) !== 'GET') {
+                    curl_setopt($ch, CURLOPT_POST, true);
+                }
+            }
+        }
+
+        // Execute
+        $response = curl_exec($ch);
+        $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $responseSize = curl_getinfo($ch, CURLINFO_SIZE_DOWNLOAD);
+	    $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+
+	    // Extract the headers
+	    $headers = substr($response, 0, $header_size);
+
+	    // Extract the body
+	    $body = substr($response, $header_size);
+
+	    // You can further parse the headers into an associative array if needed
+	    $header_lines = explode("\r\n", $headers);
+	    $responseHeaders = [];
+	    foreach ($header_lines as $line) {
+		    if (strpos($line, ':') !== false) {
+			    list($key, $value) = explode(':', $line, 2);
+			    $responseHeaders[trim($key)] = trim($value);
+		    }
+	    }
+
+        // Error check
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error) {
+            throw new RuntimeException("cURL Error: {$error}");
+        }
+
+        return [
+            'status' => $httpStatus,
+            'body' => $body,
+            'headers' => $responseHeaders,  // Raw; parse if needed
+            'size' => $responseSize,
+            'success' => $httpStatus >= 200 && $httpStatus < 300,
+        ];
+    }
+
+    /**
      * Sends a PSR-7 request and returns a PSR-7 response.
      *
      * @param RequestInterface $request
@@ -179,18 +296,27 @@ class Client implements SplSubject, ClientInterface {
          */
         $response = new Response();
 
-        try {
-            // make the request
-            $body = file_get_contents((string)$request->getUri(), false, $this->createContext($request));
-            [$statusCode, $headers] = $this->parseGlobalResponseHeaders();
+         try {
+	         //            $body = file_get_contents((string)$request->getUri(), false, $this->createContext($request));
+	         //            [$statusCode, $headers] = $this->parseGlobalResponseHeaders();
 
-            // set the response
-            $response = new Response($body, $statusCode, $headers);
-            $response->setRequest($request);
-        } catch (Throwable $th) {
-            $response->setBody('Error: ' . $th->getMessage());
-            $response->setStatus(HttpStatus::UnknownError);
-        }
+             $headers = [];
+             foreach($request->getHeaders() as $name => $values) {
+                 $headers[] = ['name' => $name, 'value' => implode(', ', $values)];
+             }
+
+			 [
+		         'status' => $statusCode,
+		         'body' => $body,
+		         'headers' => $headers,
+	         ] = $this->curlRequest((string)$request->getUri(), $request->getMethod(), $headers, $request->getBody()->getContents(), false);
+
+	         // set the response
+	         $response = $request->getResponse($body, $statusCode, $headers);
+         } catch (Throwable $th) {
+             $response->setBody('Error: ' . $th->getMessage());
+             $response->setStatus(HttpStatus::UnknownError);
+         }
 
         return $response;
     }

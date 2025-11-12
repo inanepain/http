@@ -316,7 +316,7 @@ class Message implements MessageInterface {
     protected function setHeaders(array $headers): void {
         $this->headerNames = $this->headers = [];
         foreach ($headers as $name => $value) {
-            if (is_int($name)) $name = strval($name);
+            if (is_int($name)) $name = (string)$name;
             $normalized = strtolower($name);
             if (isset($this->headerNames[$normalized])) {
                 $name = $this->headerNames[$normalized];
