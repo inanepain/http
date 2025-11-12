@@ -166,24 +166,28 @@ class Client implements SplSubject, ClientInterface {
         return [$statusCode, $headers];
     }
 
-    /**
-     * PHP cURL Request Handler - Flexible HTTP Client
-     *
-     * Features:
-     * - Supports GET/POST/PUT/DELETE/etc. methods
-     * - Custom headers (e.g., Authorization, Content-Type)
-     * - Body data (JSON/form) or file uploads (multipart)
-     * - Returns response body, status code, and headers
-     * - Error handling with verbose output
-     *
-     * Usage:
-     *   $response = curlRequest($url, $method, $headers, $bodyOrFile);
-     *
-     * @author Grok PHP cURL Library
-     * @version 1.0.0
-     */
-
-    protected function curlRequest(
+	/**
+	 * Perform an HTTP request using cURL
+	 * This method executes an HTTP request to the specified URL using the provided
+	 * method, headers, body, and configurations.
+	 *
+	 * @param string $url        The target URL for the HTTP request
+	 * @param string $method     The HTTP method to use (e.g., 'GET', 'POST', 'PUT', etc.); defaults to 'GET'
+	 * @param array  $headers    An array of HTTP headers to include in the request
+	 * @param mixed  $bodyOrFile The body content or file to be sent; supports a string/array for body
+	 *                           or an upload array (e.g., ['file' => ['path' => ..., 'name' => ...]])
+	 * @param bool   $verifySsl  Whether to verify SSL certificates and host; defaults to true
+	 *
+	 * @return array An array containing the response data:
+	 *               - 'status': The HTTP status code of the response
+	 *               - 'body': The response body as a string
+	 *               - 'headers': The response headers as an associative array
+	 *               - 'size': The size of the response body
+	 *               - 'success': True if the response status code is 2xx, false otherwise
+	 *
+	 * @throws RuntimeException If a cURL error occurs during the request
+	 */
+	protected function curlRequest(
         string $url,
         string $method = 'GET',
         array $headers = [],
@@ -246,23 +250,23 @@ class Client implements SplSubject, ClientInterface {
         $response = curl_exec($ch);
         $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $responseSize = curl_getinfo($ch, CURLINFO_SIZE_DOWNLOAD);
-	    $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
 
-	    // Extract the headers
-	    $headers = substr($response, 0, $header_size);
+        // Extract the headers
+        $headers = substr($response, 0, $header_size);
 
-	    // Extract the body
-	    $body = substr($response, $header_size);
+        // Extract the body
+        $body = substr($response, $header_size);
 
-	    // You can further parse the headers into an associative array if needed
-	    $header_lines = explode("\r\n", $headers);
-	    $responseHeaders = [];
-	    foreach ($header_lines as $line) {
-		    if (strpos($line, ':') !== false) {
-			    list($key, $value) = explode(':', $line, 2);
-			    $responseHeaders[trim($key)] = trim($value);
-		    }
-	    }
+        // You can further parse the headers into an associative array if needed
+        $header_lines = explode("\r\n", $headers);
+        $responseHeaders = [];
+        foreach ($header_lines as $line) {
+            if (strpos($line, ':') !== false) {
+                [$key, $value] = explode(':', $line, 2);
+                $responseHeaders[trim($key)] = trim($value);
+            }
+        }
 
         // Error check
         $error = curl_error($ch);
@@ -296,27 +300,27 @@ class Client implements SplSubject, ClientInterface {
          */
         $response = new Response();
 
-         try {
-	         //            $body = file_get_contents((string)$request->getUri(), false, $this->createContext($request));
-	         //            [$statusCode, $headers] = $this->parseGlobalResponseHeaders();
+        try {
+            //            $body = file_get_contents((string)$request->getUri(), false, $this->createContext($request));
+            //            [$statusCode, $headers] = $this->parseGlobalResponseHeaders();
 
-             $headers = [];
-             foreach($request->getHeaders() as $name => $values) {
-                 $headers[] = ['name' => $name, 'value' => implode(', ', $values)];
-             }
+            $headers = [];
+            foreach ($request->getHeaders() as $name => $values) {
+                $headers[] = ['name' => $name, 'value' => implode(', ', $values)];
+            }
 
-			 [
-		         'status' => $statusCode,
-		         'body' => $body,
-		         'headers' => $headers,
-	         ] = $this->curlRequest((string)$request->getUri(), $request->getMethod(), $headers, $request->getBody()->getContents(), false);
+            [
+                'status' => $statusCode,
+                'body' => $body,
+                'headers' => $headers,
+            ] = $this->curlRequest((string)$request->getUri(), $request->getMethod(), $headers, $request->getBody()->getContents(), false);
 
-	         // set the response
-	         $response = $request->getResponse($body, $statusCode, $headers);
-         } catch (Throwable $th) {
-             $response->setBody('Error: ' . $th->getMessage());
-             $response->setStatus(HttpStatus::UnknownError);
-         }
+            // set the response
+            $response = $request->getResponse($body, $statusCode, $headers);
+        } catch (Throwable $th) {
+            $response->setBody('Error: ' . $th->getMessage());
+            $response->setStatus(HttpStatus::UnknownError);
+        }
 
         return $response;
     }

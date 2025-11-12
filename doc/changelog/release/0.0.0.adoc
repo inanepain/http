@@ -6,8 +6,9 @@
 
 * `Client::sendRequest` works correctly now
 * `Client` file serve improvements
+* `Clinet::curlRequest` added to replace the old context method
 * 'Request' & `Response` generally improvements all over
 * update: to latest `psr` interface versions
 * fix : `AbstractRequest` now parses uri correctly (get complete url not just path) when none supplied
-* moved to new document structure
+* moved to a new document structure
 * bring back inline with **psr**
