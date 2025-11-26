@@ -270,7 +270,6 @@ class Client implements SplSubject, ClientInterface {
 
         // Error check
         $error = curl_error($ch);
-        curl_close($ch);
 
         if ($error) {
             throw new RuntimeException("cURL Error: {$error}");
