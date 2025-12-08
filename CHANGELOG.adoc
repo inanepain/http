@@ -5,8 +5,8 @@
 :keywords: inane, inanepain, library, http, client, request, response, serve, psr-7, psr-18
 :copyright: Unlicense
 :homepage: https://git.cathedral.co.za:3000/inanepain/http
-:revnumber: 0.2.0
-:revdate: 2025-08-07
+:revnumber: 0.3.0
+:revdate: 2025-12-08
 :experimental:
 :hide-uri-scheme:
 :icons: font
@@ -23,11 +23,11 @@
 
 :leveloffset: +2
 
-= 0.2.0 (2025 Aug 07)
+= 0.3.0 (2025 Dec 08)
 :author: Philip Michael Raab
 :email: <philip@cathedral.co.za>
-:revnumber: 0.2.0
-:revdate: 2025-08-07
+:revnumber: 0.3.0
+:revdate: 2025-12-08
 
 * `Client::sendRequest` — it works correctly now
 * `Client` file serve improvements
