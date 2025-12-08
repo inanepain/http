@@ -23,6 +23,8 @@
 
 {description}
 
+:sectnums:
+
 <<<
 
 :leveloffset: +1

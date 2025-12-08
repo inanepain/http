@@ -23,6 +23,26 @@
 
 :leveloffset: +2
 
+= 0.4.0 (2025 Xxx xx)
+:author: Philip Michael Raab
+:email: <philip@cathedral.co.za>
+:revnumber: 0.4.0
+:revdate: 2025-xx-xx
+:revremark: -dev
+
+* `Client::sendRequest` — it works correctly now
+* `Client` file serve improvements
+* `Clinet::curlRequest` added to replace the old context method
+* `Request` & `Response` generally improvements all over
+* *update* : to latest `psr` interface versions
+* *fix* : `AbstractRequest` now parses uri correctly (get complete url not just path) when none supplied
+* *update* : `Client::serveFile` temporarily disables `Dumper` if it is found and enabled
+* moved to a new document structure
+* bring back inline with **psr**
+
+:leveloffset!:
+:leveloffset: +2
+
 = 0.3.0 (2025 Dec 08)
 :author: Philip Michael Raab
 :email: <philip@cathedral.co.za>

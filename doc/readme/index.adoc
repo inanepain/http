@@ -23,6 +23,8 @@
 
 {description}
 
+:sectnums:
+
 <<<
 
 include::part/install.adoc[leveloffset=+1]
