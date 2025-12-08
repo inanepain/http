@@ -17,7 +17,7 @@
  * @license UNLICENSE
  * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $version
+ * _version_ $version
  */
 
 declare(strict_types=1);
@@ -28,8 +28,7 @@ use Inane\Stdlib\Exception\RuntimeException as InaneRuntimeException;
 
 /**
  * RuntimeException
- *
- * @package Inane\Http\Exception
+ * 
  * @version 0.3.0
  */
 class RuntimeException extends InaneRuntimeException {

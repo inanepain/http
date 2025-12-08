@@ -17,7 +17,7 @@
  * @license UNLICENSE
  * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $version
+ * _version_ $version
  */
 
 declare(strict_types=1);
@@ -32,8 +32,6 @@ use Psr\Http\Message\RequestInterface;
  * @deprecated use Psr\Http\Message\RequestInterface
  *
  * @version 0.5.0
- *
- * @package Inane\Http
  */
 interface IRequestAware {
     /**

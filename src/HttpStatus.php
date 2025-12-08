@@ -17,7 +17,7 @@
  * @license UNLICENSE
  * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $version
+ * _version_ $version
  */
 
 declare(strict_types=1);
@@ -34,8 +34,6 @@ namespace Inane\Http;
  *  - 5xx: Server Error
  *
  * @version 1.1.0
- *
- * @package Inane\Http
  */
 enum HttpStatus {
         // 1xx Informational

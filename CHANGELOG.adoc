@@ -5,10 +5,9 @@
 :keywords: inane, inanepain, library, http, client, request, response, serve, psr-7, psr-18
 :copyright: Unlicense
 :homepage: https://git.cathedral.co.za:3000/inanepain/http
-:revnumber: 0.2.0
-:revdate: 2025-08-07
+:revnumber: 0.3.0
+:revdate: 2025-12-08
 :experimental:
-:doctype: book
 :hide-uri-scheme:
 :icons: font
 :source-highlighter: highlight.js
@@ -20,10 +19,27 @@
 :pkg-name: http
 :pkg-id: {pkg-vendor}/{pkg-name}
 
-Version: $Id$ ($Date$)
-
 == History
 
+:leveloffset: +2
+
+= 0.3.0 (2025 Dec 08)
+:author: Philip Michael Raab
+:email: <philip@cathedral.co.za>
+:revnumber: 0.3.0
+:revdate: 2025-12-08
+
+* `Client::sendRequest` — it works correctly now
+* `Client` file serve improvements
+* `Clinet::curlRequest` added to replace the old context method
+* `Request` & `Response` generally improvements all over
+* *update* : to latest `psr` interface versions
+* *fix* : `AbstractRequest` now parses uri correctly (get complete url not just path) when none supplied
+* *update* : `Client::serveFile` temporarily disables `Dumper` if it is found and enabled
+* moved to a new document structure
+* bring back inline with **psr**
+
+:leveloffset!:
 :leveloffset: +2
 
 = 0.2.0 (2025 Aug 07)

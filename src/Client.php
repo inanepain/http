@@ -17,15 +17,17 @@
  * @license UNLICENSE
  * @license https://unlicense.org/UNLICENSE UNLICENSE
  *
- * @version $version
+ * _version_ $version
  */
 
 declare(strict_types=1);
 
 namespace Inane\Http;
 
+use CURLFile;
 use Deprecated;
 use Inane\File\File;
+use Inane\Stdlib\Exception\RuntimeException;
 use Psr\Http\Client\ClientInterface;
 use SplObserver;
 use SplSubject;
@@ -67,8 +69,7 @@ use function usleep;
  * Sends Http messages
  *
  * @link file:///Users/philip/Temp/mime/mt.php for mimetype updating
- *
- * @package Inane\Http
+ * 
  * @version 1.8.0
  */
 class Client implements SplSubject, ClientInterface {
@@ -165,6 +166,124 @@ class Client implements SplSubject, ClientInterface {
         return [$statusCode, $headers];
     }
 
+	/**
+	 * Perform an HTTP request using cURL
+	 * This method executes an HTTP request to the specified URL using the provided
+	 * method, headers, body, and configurations.
+	 *
+	 * @param string $url        The target URL for the HTTP request
+	 * @param string $method     The HTTP method to use (e.g., 'GET', 'POST', 'PUT', etc.); defaults to 'GET'
+	 * @param array  $headers    An array of HTTP headers to include in the request
+	 * @param mixed  $bodyOrFile The body content or file to be sent; supports a string/array for body
+	 *                           or an upload array (e.g., ['file' => ['path' => ..., 'name' => ...]])
+	 * @param bool   $verifySsl  Whether to verify SSL certificates and host; defaults to true
+	 *
+	 * @return array An array containing the response data:
+	 *               - 'status': The HTTP status code of the response
+	 *               - 'body': The response body as a string
+	 *               - 'headers': The response headers as an associative array
+	 *               - 'size': The size of the response body
+	 *               - 'success': True if the response status code is 2xx, false otherwise
+	 *
+	 * @throws RuntimeException If a cURL error occurs during the request
+	 */
+	protected function curlRequest(
+        string $url,
+        string $method = 'GET',
+        array $headers = [],
+        $bodyOrFile = null,  // string/array for body; array with 'file' for upload
+        bool $verifySsl = true
+    ): array {
+        $ch = curl_init();
+
+        // Basic setup
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HEADER => true,
+            CURLOPT_MAXREDIRS => 3,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_SSL_VERIFYPEER => $verifySsl,
+            CURLOPT_SSL_VERIFYHOST => $verifySsl ? 2 : 0,
+            CURLOPT_USERAGENT => 'PHP-cURL/1.0',
+        ]);
+
+        // Method handling
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
+
+        // Headers
+        if (!empty($headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array_map(function ($h) {
+                return is_string($h) ? $h : "{$h['name']}: {$h['value']}";
+            }, $headers));
+        }
+
+        // Body or file
+        if ($bodyOrFile !== null) {
+            if (is_array($bodyOrFile) && isset($bodyOrFile['file'])) {
+                // Multipart file upload (e.g., ['file' => ['path' => '/file.txt', 'name' => 'upload.txt']])
+                $postFields = [];
+                foreach ($bodyOrFile as $key => $data) {
+                    if ($key === 'file') {
+                        $postFields[$data['name']] = new CURLFile($data['path'], mime_content_type($data['path']), $data['name']);
+                    } else {
+                        $postFields[$key] = $data;
+                    }
+                }
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+                curl_setopt($ch, CURLOPT_POST, true);
+            } else {
+                // Raw body (string/JSON/array)
+                if (is_array($bodyOrFile)) {
+                    $bodyOrFile = json_encode($bodyOrFile);  // Auto-JSON
+                    $headers[] = ['name' => 'Content-Type', 'value' => 'application/json'];
+                }
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $bodyOrFile);
+                if (strtoupper($method) !== 'GET') {
+                    curl_setopt($ch, CURLOPT_POST, true);
+                }
+            }
+        }
+
+        // Execute
+        $response = curl_exec($ch);
+        $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $responseSize = curl_getinfo($ch, CURLINFO_SIZE_DOWNLOAD);
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+
+        // Extract the headers
+        $headers = substr($response, 0, $header_size);
+
+        // Extract the body
+        $body = substr($response, $header_size);
+
+        // You can further parse the headers into an associative array if needed
+        $header_lines = explode("\r\n", $headers);
+        $responseHeaders = [];
+        foreach ($header_lines as $line) {
+            if (strpos($line, ':') !== false) {
+                [$key, $value] = explode(':', $line, 2);
+                $responseHeaders[trim($key)] = trim($value);
+            }
+        }
+
+        // Error check
+        $error = curl_error($ch);
+
+        if ($error) {
+            throw new RuntimeException("cURL Error: {$error}");
+        }
+
+        return [
+            'status' => $httpStatus,
+            'body' => $body,
+            'headers' => $responseHeaders,  // Raw; parse if needed
+            'size' => $responseSize,
+            'success' => $httpStatus >= 200 && $httpStatus < 300,
+        ];
+    }
+
     /**
      * Sends a PSR-7 request and returns a PSR-7 response.
      *
@@ -181,13 +300,22 @@ class Client implements SplSubject, ClientInterface {
         $response = new Response();
 
         try {
-            // make the request
-            $body = file_get_contents((string)$request->getUri(), false, $this->createContext($request));
-            [$statusCode, $headers] = $this->parseGlobalResponseHeaders();
+            //            $body = file_get_contents((string)$request->getUri(), false, $this->createContext($request));
+            //            [$statusCode, $headers] = $this->parseGlobalResponseHeaders();
+
+            $headers = [];
+            foreach ($request->getHeaders() as $name => $values) {
+                $headers[] = ['name' => $name, 'value' => implode(', ', $values)];
+            }
+
+            [
+                'status' => $statusCode,
+                'body' => $body,
+                'headers' => $headers,
+            ] = $this->curlRequest((string)$request->getUri(), $request->getMethod(), $headers, $request->getBody()->getContents(), false);
 
             // set the response
-            $response = new Response($body, $statusCode, $headers);
-            $response->setRequest($request);
+            $response = $request->getResponse($body, $statusCode, $headers);
         } catch (Throwable $th) {
             $response->setBody('Error: ' . $th->getMessage());
             $response->setStatus(HttpStatus::UnknownError);
@@ -287,13 +415,13 @@ class Client implements SplSubject, ClientInterface {
      * @return void
      */
     protected function sendHeaders(ResponseInterface $response): void {
+        http_response_code($response->getStatus()->code());
+        
         /**
          * @var Response $response
          */
         if ($response->getStatus() == HttpStatus::PartialContent || $response->getStatus() == HttpStatus::Ok)
             header($response->getStatus()->message());
-
-        http_response_code($response->getStatus()->code());
 
         foreach ($response->getHeaders() as $header => $value) {
             if (is_array($value)) foreach ($value as $val) header("$header: $val");
@@ -409,10 +537,18 @@ class Client implements SplSubject, ClientInterface {
         ini_set('memory_limit', '-1'); // unlimited
 
         // if Dumper exists, lets disable it.
-        if (class_exists('\Inane\Dumper\Dumper')) \Inane\Dumper\Dumper::$enabled = false;
+        if (class_exists('\Inane\Dumper\Dumper')) {
+            $originalValue = \Inane\Dumper\Dumper::$enabled;
+            \Inane\Dumper\Dumper::$enabled = false;
+        }
 
         if ($response->isThrottled()) $this->sendBuffer($response, $fp);
         else $this->sendResponse($response->setBody(fread($fp, $byte_to)));
+
+        // if Dumper exists, restore value.
+        if (class_exists('\Inane\Dumper\Dumper')) {
+            \Inane\Dumper\Dumper::$enabled = $originalValue;
+        }
 
         fclose($fp);
     }
