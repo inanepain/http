@@ -537,10 +537,18 @@ class Client implements SplSubject, ClientInterface {
         ini_set('memory_limit', '-1'); // unlimited
 
         // if Dumper exists, lets disable it.
-        if (class_exists('\Inane\Dumper\Dumper')) \Inane\Dumper\Dumper::$enabled = false;
+        if (class_exists('\Inane\Dumper\Dumper')) {
+            $originalValue = \Inane\Dumper\Dumper::$enabled;
+            \Inane\Dumper\Dumper::$enabled = false;
+        }
 
         if ($response->isThrottled()) $this->sendBuffer($response, $fp);
         else $this->sendResponse($response->setBody(fread($fp, $byte_to)));
+
+        // if Dumper exists, restore value.
+        if (class_exists('\Inane\Dumper\Dumper')) {
+            \Inane\Dumper\Dumper::$enabled = $originalValue;
+        }
 
         fclose($fp);
     }
