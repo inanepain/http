@@ -1,9 +1,8 @@
-= 0.4.0 (2025 Xxx xx)
+= 0.3.0 (2025 Dec 08)
 :author: Philip Michael Raab
 :email: <philip@cathedral.co.za>
-:revnumber: 0.4.0
-:revdate: 2025-xx-xx
-:revremark: -dev
+:revnumber: 0.3.0
+:revdate: 2025-12-08
 
 * `Client::sendRequest` — it works correctly now
 * `Client` file serve improvements
