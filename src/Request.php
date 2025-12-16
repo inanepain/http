@@ -208,7 +208,7 @@ class Request extends AbstractRequest implements Stringable {
         if ($this->allowAllProperties) $this->magicPropertiesAllowed = array_keys($data);
 
         $this->properties = new Options($data);
-        $this->getPost();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') $this->getPost();
         $this->getQuery();
     }
 
@@ -259,10 +259,13 @@ class Request extends AbstractRequest implements Stringable {
      * @return \Inane\Stdlib\Options
      */
     public function getPost(?string $param = null, ?string $default = null): Options {
-        if (!isset($this->post)) $this->post = new Options((count($_POST) > 0 ? $_POST : Json::decode(file_get_contents('php://input'))) ?? []);
+        if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+            if (!isset($this->post)) $this->post = new Options((count($_POST) > 0 ? $_POST : Json::decode(file_get_contents('php://input'))) ?? []);
 
-        if (!is_null($param)) return $this->post->get($param, $default);
-        return $this->post;
+            if (!is_null($param)) return $this->post->get($param, $default);
+            return $this->post;
+        }
+        return new Options([]);
     }
 
     /**
