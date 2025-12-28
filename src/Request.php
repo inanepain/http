@@ -208,7 +208,7 @@ class Request extends AbstractRequest implements Stringable {
         if ($this->allowAllProperties) $this->magicPropertiesAllowed = array_keys($data);
 
         $this->properties = new Options($data);
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') $this->getPost();
+        if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') $this->getPost();
         $this->getQuery();
     }
 
