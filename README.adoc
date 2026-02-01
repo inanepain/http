@@ -54,3 +54,18 @@ $client->send($response);
 ----
 
 :leveloffset!:
+
+<<<
+
+:leveloffset: +1
+
+= Client Download Progress
+
+How to show progress on downloads using the *Http Client*.
+
+[source,php]
+----
+// to be continued...
+----
+
+:leveloffset!:
