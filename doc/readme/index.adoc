@@ -5,8 +5,8 @@
 :keywords: inane, inanepain, library, http, client, request, response, serve, psr-7, psr-18
 :homepage: https://github.com/inanepain/http
 :copyright: Unlicense
-:revnumber: 0.3.0
-:revdate: 2025-12-08
+:revnumber: 0.4.0
+:revdate: 2026-02-20
 :experimental:
 :hide-uri-scheme:
 :icons: font
