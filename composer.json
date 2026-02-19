@@ -3,7 +3,7 @@
     "description": "Http client (psr-18), request and response object message interfaces (psr-7).",
     "type": "library",
     "license": "Unlicense",
-    "homepage": "https://git.cathedral.co.za:3000/inanepain/http",
+    "homepage": "https://github.com/inanepain/http",
     "readme": "README.adoc",
     "authors": [
         {
@@ -14,7 +14,7 @@
     ],
     "support": {
         "email": "philip@cathedral.co.za",
-        "issues": "https://git.cathedral.co.za:3000/inanepain/http/issues"
+        "issues": "https://github.com/inanepain/http/issues"
     },
     "keywords": [
         "inane",
@@ -42,6 +42,8 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=8.4",
+        "ext-curl": "*",
+        "ext-fileinfo": "*",
         "psr/http-message": "*",
         "psr/http-client": "*",
         "inanepain/file": ">=0.3.0 || dev-master || dev-develop",
@@ -58,6 +60,7 @@
             "touch doc/readme/part/install.adoc"
         ],
         "build": [
+            "echo \"Library: inanepain/$(basename $(pwd))\"",
             "echo build: all...",
             "@build-changelog",
             "@build-readme",

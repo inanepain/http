@@ -1,12 +1,12 @@
-= README: inanepain/http
+= inanepain/http image:./icon.png[title=inanepain/http,25]
 :author: Philip Michael Raab
 :email: <philip@cathedral.co.za>
 :description: Http client (psr-18), request and response object message interfaces (psr-7).
 :keywords: inane, inanepain, library, http, client, request, response, serve, psr-7, psr-18
+:homepage: https://github.com/inanepain/http
 :copyright: Unlicense
-:homepage: https://git.cathedral.co.za:3000/inanepain/http
-:revnumber: 0.3.0
-:revdate: 2025-12-08
+:revnumber: 0.4.0
+:revdate: 2026-02-20
 :experimental:
 :hide-uri-scheme:
 :icons: font
@@ -51,6 +51,53 @@ $client = new \Inane\Http\Client();
 $response = new \Inane\Http\Response();
 $response->setBody('{"title":"Example"}');
 $client->send($response);
+----
+
+:leveloffset: +1
+
+= Download Progress
+
+How to show progress on downloads *requested* using the *Http Client*.
+
+.Print download progress to console.
+[source,php]
+----
+class Package implements NotifyProgressInterface {
+    public function progress(int $download_total, int $downloaded, int $percent): void {
+        if ($percent === 100) {
+            printf("\rDownloaded: %d bytes", $downloaded);
+        } else {
+            printf("\rDownloaded: %0.2f%% (%d / %d bytes)", $percent, $downloaded, $download_total);
+        }
+    }
+}
+
+$pkg = new Package('xxx');
+
+$client = new \Inane\Http\Client();
+$request = new Request('GET', $pkg->getDataUrl());
+
+$client->registerProgressListener($pkg);
+
+$response = $client->sendRequest($request);
+$json = $response->getBody()->getContents();
+----
+
+:leveloffset: 1
+
+:leveloffset!:
+
+<<<
+
+:leveloffset: +1
+
+= Client Download Progress
+
+How to show progress on downloads served using the *Http Client*.
+
+[source,php]
+----
+// to be continued...
 ----
 
 :leveloffset!:
