@@ -23,6 +23,17 @@
 
 :leveloffset: +2
 
+= 0.5.0-dev (2026 Xxx xx)
+:author: Philip Michael Raab
+:email: <philip@cathedral.co.za>
+:revnumber: 0.5.0
+:revdate: 2026-xx-xx
+:revremark: -dev
+
+
+:leveloffset!:
+:leveloffset: +2
+
 = 0.4.0 (2026 Feb 20)
 :author: Philip Michael Raab
 :email: <philip@cathedral.co.za>
