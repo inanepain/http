@@ -1,6 +1,6 @@
 = Client Download Progress
 
-How to show progress on downloads using the *Http Client*.
+How to show progress on downloads served using the *Http Client*.
 
 [source,php]
 ----
