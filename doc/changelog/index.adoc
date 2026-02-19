@@ -4,9 +4,9 @@
 :description: Http client (psr-18), request and response object message interfaces (psr-7).
 :keywords: inane, inanepain, library, http, client, request, response, serve, psr-7, psr-18
 :copyright: Unlicense
-:homepage: https://git.cathedral.co.za:3000/inanepain/http
-:revnumber: 0.3.0
-:revdate: 2025-12-08
+:homepage: https://github.com/inanepain/http
+:revnumber: 0.4.0
+:revdate: 2026-02-20
 :experimental:
 :hide-uri-scheme:
 :icons: font
@@ -21,7 +21,7 @@
 
 == History
 
-include::./release/0.0.0.adoc[leveloffset=+2]
+include::./release/0.4.0.adoc[leveloffset=+2]
 include::./release/0.3.0.adoc[leveloffset=+2]
 include::./release/0.2.0.adoc[leveloffset=+2]
 include::./release/0.1.4.adoc[leveloffset=+2]
