@@ -38,6 +38,7 @@ use Psr\Http\Message\{
 use SplObserver;
 use SplSubject;
 use Throwable;
+
 use function array_map;
 use function class_exists;
 use function curl_error;
@@ -74,6 +75,7 @@ use function strtoupper;
 use function substr;
 use function trim;
 use function usleep;
+
 use const CURLINFO_HEADER_SIZE;
 use const CURLINFO_HTTP_CODE;
 use const CURLINFO_SIZE_DOWNLOAD;
@@ -477,7 +479,7 @@ class Client implements SplSubject, ClientInterface {
         if ($this->servProgress > $fileSize) $this->servProgress = $fileSize;
 
         $percent = round($this->servProgress / $fileSize * 100, 0);
-        if ($percent != $this->servPercent) {
+        if ($percent !== $this->servPercent) {
             $this->notify();
             $this->servPercent = (int)$percent;
         }

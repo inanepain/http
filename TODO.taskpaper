@@ -1,2 +1,10 @@
 inanepain/http:
-  Http client (psr-18), request and response object message interfaces (psr-7).
+	Http client (psr-18), request and response object message interfaces (psr-7).
+	Progress Notification:
+		Handle sending notifications to listeners.
+		- Replace both current systems with a single one.
+		- Use WeakMap for Listeners
+			This is an array that holds the events the listener is interested in.
+			- upload: key for server sending data progress
+			- download: key for server recieving data progress
+		- notify: will send a progress event to listener with relavent data
