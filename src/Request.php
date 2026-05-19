@@ -8,7 +8,7 @@
  * $Id$
  * $Date$
  *
- * PHP version 8.4
+ * PHP version 8.5
  *
  * @author Philip Michael Raab<philip@cathedral.co.za>
  * @package inanepain\http
@@ -26,20 +26,23 @@ namespace Inane\Http;
 
 use Inane\Http\Exception\PropertyException;
 use Inane\Http\Request\AbstractRequest;
+use Inane\Stdlib\{
+    Json,
+    Options,
+    String\Inflector};
+use Psr\Http\Message\UriInterface;
 use Stringable;
 
+use function array_any;
 use function array_keys;
 use function function_exists;
 use function in_array;
 use function is_null;
 use function str_starts_with;
-use function array_any;
 use function strtolower;
+
 use const null;
 use const true;
-
-use Inane\Stdlib\{Json, String\Inflector, Options};
-use Psr\Http\Message\UriInterface;
 
 /**
  * Request
@@ -56,7 +59,7 @@ class Request extends AbstractRequest implements Stringable {
 
     /**
      * Accept header
-     * 
+     *
      * @var string
      */
     protected string $accept = '';

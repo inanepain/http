@@ -8,7 +8,7 @@
  * $Id$
  * $Date$
  *
- * PHP version 8.4
+ * PHP version 8.5
  *
  * @author Philip Michael Raab<philip@cathedral.co.za>
  * @package inanepain\http
@@ -43,6 +43,7 @@ use function sprintf;
 use function stream_get_contents;
 use function stream_get_meta_data;
 use function trigger_error;
+
 use const E_USER_ERROR;
 use const false;
 use const null;

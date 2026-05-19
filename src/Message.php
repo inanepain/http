@@ -8,7 +8,7 @@
  * $Id$
  * $Date$
  *
- * PHP version 8.4
+ * PHP version 8.5
  *
  * @author Philip Michael Raab<philip@cathedral.co.za>
  * @package inanepain\http
@@ -25,23 +25,14 @@ declare(strict_types=1);
 namespace Inane\Http;
 
 use Inane\Http\Exception\InvalidArgumentException;
-
-use function array_merge;
-use function array_pop;
-use function explode;
-use function implode;
-use function is_int;
-use function is_string;
-use function strtolower;
-use function strval;
-use const false;
-use const null;
-use const true;
-
 use Psr\Http\Message\{
     MessageInterface,
-    StreamInterface
-};
+    StreamInterface};
+
+use function array_merge;
+use function implode;
+use function is_int;
+use function strtolower;
 
 /**
  * Message

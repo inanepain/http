@@ -8,7 +8,7 @@
  * $Id$
  * $Date$
  *
- * PHP version 8.4
+ * PHP version 8.5
  *
  * @author Philip Michael Raab<philip@cathedral.co.za>
  * @package inanepain\http
@@ -24,30 +24,28 @@ declare(strict_types=1);
 
 namespace Inane\Http\Request;
 
-use function array_key_exists;
-use function is_null;
-use function is_string;
-use function preg_match;
-use function strtoupper;
-use const false;
-use const null;
-
 use Inane\Http\{
     Exception\InvalidArgumentException,
     HttpMethod,
     Message,
     Stream,
-    Uri
-};
+    Uri};
 use Inane\Stdlib\Exception\{
     BadMethodCallException,
-    UnexpectedValueException
-};
+    UnexpectedValueException};
 use Psr\Http\Message\{
     RequestInterface,
     StreamInterface,
-    UriInterface
-};
+    UriInterface};
+
+use function array_key_exists;
+use function is_null;
+use function is_string;
+use function preg_match;
+use function strtoupper;
+
+use const false;
+use const null;
 
 /**
  * Request

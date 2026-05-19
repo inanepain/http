@@ -8,7 +8,7 @@
  * $Id$
  * $Date$
  *
- * PHP version 8.4
+ * PHP version 8.5
  *
  * @author Philip Michael Raab<philip@cathedral.co.za>
  * @package inanepain\http
@@ -25,19 +25,17 @@ declare(strict_types=1);
 namespace Inane\Http;
 
 use Inane\File\File;
-use SimpleXMLElement;
-use Stringable;
 use Inane\Stdlib\{
     Exception\BadMethodCallException,
     Exception\UnexpectedValueException,
     Json,
-    Options
-};
+    Options};
 use Psr\Http\Message\{
     RequestInterface,
     ResponseInterface,
-    StreamInterface
-};
+    StreamInterface};
+use SimpleXMLElement;
+use Stringable;
 
 use function htmlspecialchars;
 use function in_array;
@@ -346,7 +344,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      * This is a rough kb/s speed (But very rough!).
      *
      * @param  $kbps
-     * 
+     *
      * @return Response
      */
     protected function setBandwidth(int $kbps = 0): self {

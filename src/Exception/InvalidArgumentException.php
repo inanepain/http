@@ -8,7 +8,7 @@
  * $Id$
  * $Date$
  *
- * PHP version 8.4
+ * PHP version 8.5
  *
  * @author Philip Michael Raab<philip@cathedral.co.za>
  * @package inanepain\http
@@ -24,11 +24,11 @@ declare(strict_types=1);
 
 namespace Inane\Http\Exception;
 
-use \Inane\Stdlib\Exception\InvalidArgumentException as InaneInvalidArgumentException;
+use Inane\Stdlib\Exception\InvalidArgumentException as InaneInvalidArgumentException;
 
 /**
  * InvalidArgumentException
- * 
+ *
  * @version 0.3.0
  */
 class InvalidArgumentException extends InaneInvalidArgumentException {
