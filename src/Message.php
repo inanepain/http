@@ -165,7 +165,7 @@ class Message implements MessageInterface {
     /**
      * Retrieves a comma-separated string of the values for a single header.
      *
-     * This method returns all of the header values of the given
+     * This method returns all the header values of the given
      * case-insensitive header name as a string concatenated together using
      * a comma.
      *
@@ -173,7 +173,7 @@ class Message implements MessageInterface {
      * comma concatenation. For such headers, use getHeader() instead
      * and supply your own delimiter when concatenating.
      *
-     * If the header does not appear in the message, this method MUST return
+     * If the header doesn't appear in the message, this method MUST return
      * an empty string.
      *
      * @param string $name Case-insensitive header field name.

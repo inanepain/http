@@ -215,7 +215,7 @@ class Stream implements StreamInterface, Stringable {
     }
 
     /**
-     * Returns whether or not the stream is seekable.
+     * Returns whether the stream is seekable.
      *
      * @return bool
      */
@@ -267,7 +267,7 @@ class Stream implements StreamInterface, Stringable {
     }
 
     /**
-     * Returns whether or not the stream is writable.
+     * Returns whether the stream is writable.
      *
      * @return bool
      */
@@ -299,7 +299,7 @@ class Stream implements StreamInterface, Stringable {
     }
 
     /**
-     * Returns whether or not the stream is readable.
+     * Returns whether the stream is readable.
      *
      * @return bool
      */

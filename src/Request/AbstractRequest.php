@@ -288,7 +288,7 @@ class AbstractRequest extends Message implements RequestInterface {
      * contain a host component, any pre-existing Host header MUST be carried
      * over to the returned request.
      *
-     * You can opt-in to preserving the original state of the Host header by
+     * You can opt in to preserving the original state of the Host header by
      * setting `$preserveHost` to `true`. When `$preserveHost` is set to
      * `true`, this method interacts with the Host header in the following ways:
      *
