@@ -25,12 +25,14 @@ declare(strict_types = 1);
 namespace Inane\Http;
 
 use CURLFile;
+use Inane\Dumper\Dumper;
 use Inane\File\File;
 use Inane\Stdlib\Exception\BadMethodCallException;
 use Inane\Stdlib\Exception\JsonException;
 use Inane\Stdlib\Exception\RuntimeException;
 use Inane\Stdlib\Exception\UnexpectedValueException;
 use Inane\Stdlib\Json;
+use InvalidArgumentException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\{
     RequestInterface,
@@ -57,6 +59,7 @@ use function fseek;
 use function header;
 use function http_response_code;
 use function implode;
+use function in_array;
 use function ini_set;
 use function is_array;
 use function is_string;
@@ -70,7 +73,6 @@ use function round;
 use function set_time_limit;
 use function str_replace;
 use function stream_context_create;
-use function strpos;
 use function strtoupper;
 use function substr;
 use function trim;
@@ -79,11 +81,13 @@ use function usleep;
 use const CURLINFO_HEADER_SIZE;
 use const CURLINFO_HTTP_CODE;
 use const CURLINFO_SIZE_DOWNLOAD;
+use const CURLOPT_CONNECTTIMEOUT;
 use const CURLOPT_CUSTOMREQUEST;
 use const CURLOPT_FOLLOWLOCATION;
 use const CURLOPT_HEADER;
 use const CURLOPT_HTTPHEADER;
 use const CURLOPT_MAXREDIRS;
+use const CURLOPT_NOPROGRESS;
 use const CURLOPT_POST;
 use const CURLOPT_POSTFIELDS;
 use const CURLOPT_RETURNTRANSFER;
@@ -92,6 +96,7 @@ use const CURLOPT_SSL_VERIFYPEER;
 use const CURLOPT_TIMEOUT;
 use const CURLOPT_URL;
 use const CURLOPT_USERAGENT;
+use const CURLOPT_XFERINFOFUNCTION;
 
 /**
  * Client
@@ -108,30 +113,35 @@ class Client implements SplSubject, ClientInterface {
      * SplObserver[] observers
      */
     private array $observers = [];
+
     /**
      * List of clients to be notified
      *
      * @var array
      */
     protected array $notifyClients = [];
+
     /**
      * File size served
      *
      * @var int
      */
     protected int $servProgress = 0;
+
     /**
      * File size served %
      *
      * @var int
      */
     protected int $servPercent = 0;
+
     /**
      * File served
      *
      * @var File
      */
     protected File $servfile;
+
     //#endregion Properties
 
     /**
@@ -166,7 +176,7 @@ class Client implements SplSubject, ClientInterface {
             $body = $request->getBody()
                 ->getContents()
             ;
-        } catch (\Throwable $th) {
+        } catch (\Throwable) {
             $body = null;
         }
 
@@ -184,19 +194,26 @@ class Client implements SplSubject, ClientInterface {
      */
     protected function parseGlobalResponseHeaders(): array {
         // Parse headers
-        $statusLine = $http_response_header[0] ?? 'HTTP/1.1 000 Unknown';
+        $httpResponseHeader = http_get_last_response_headers();
+        $statusLine = $httpResponseHeader[0] ?? 'HTTP/1.1 000 Unknown';
         preg_match('{HTTP/\S+ (\d+)}', $statusLine, $match);
         $statusCode = isset($match[1]) ? (int)$match[1] : 0;
 
         $headers = [];
-        foreach($http_response_header ?? [] as $headerLine) {
+        foreach($httpResponseHeader ?? [] as $headerLine) {
             if (str_contains($headerLine, ':')) {
-                [$key, $value] = explode(':', $headerLine, 2);
+                [
+                    $key,
+                    $value,
+                ] = explode(':', $headerLine, 2);
                 $headers[trim($key)] = trim($value);
             }
         }
 
-        return [$statusCode, $headers];
+        return [
+            $statusCode,
+            $headers,
+        ];
     }
 
     /**
@@ -224,8 +241,8 @@ class Client implements SplSubject, ClientInterface {
     protected function curlRequest(
         string $url,
         string $method = 'GET',
-        array $headers = [],
-        mixed $bodyOrFile = null,  // string/array for body; array with 'file' for upload
+        array  $headers = [],
+        mixed  $bodyOrFile = null,  // string/array for body; array with 'file' for upload
         bool   $verifySsl = true,
     ): array {
         $ch = curl_init();
@@ -275,7 +292,10 @@ class Client implements SplSubject, ClientInterface {
                 // Raw body (string/JSON/array)
                 if (is_array($bodyOrFile)) {
                     $bodyOrFile = Json::encode($bodyOrFile);  // Auto-JSON
-                    $headers[] = ['name' => 'Content-Type', 'value' => 'application/json'];
+                    $headers[] = [
+                        'name'  => 'Content-Type',
+                        'value' => 'application/json',
+                    ];
                 }
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $bodyOrFile);
                 if (strtoupper($method) !== 'GET') {
@@ -301,8 +321,11 @@ class Client implements SplSubject, ClientInterface {
         $header_lines = explode("\n", $headers_str);
         $responseHeaders = [];
         foreach($header_lines as $line) {
-            if (strpos($line, ':') !== false) {
-                [$key, $value] = explode(':', $line, 2);
+            if (str_contains($line, ':')) {
+                [
+                    $key,
+                    $value,
+                ] = explode(':', $line, 2);
                 $responseHeaders[trim($key)] = trim($value);
             }
         }
@@ -311,13 +334,14 @@ class Client implements SplSubject, ClientInterface {
         $error = curl_error($ch);
 
         if ($error) {
-            throw new RuntimeException("cURL Error: {$error}");
+            throw new RuntimeException("cURL Error: $error");
         }
 
         return [
             'status'  => $httpStatus,
             'body'    => $body,
-            'headers' => $responseHeaders,  // Raw; parse if needed
+            'headers' => $responseHeaders,
+            // Raw; parse if needed
             'size'    => $responseSize,
             'success' => $httpStatus >= 200 && $httpStatus < 300,
         ];
@@ -337,11 +361,11 @@ class Client implements SplSubject, ClientInterface {
         /**
          * @var Response $response
          */
-        if ($response->getStatus() == HttpStatus::PartialContent || $response->getStatus() == HttpStatus::Ok) header($response->getStatus()
+        if ($response->getStatus() === HttpStatus::PartialContent || $response->getStatus() === HttpStatus::Ok) header($response->getStatus()
             ->message());
 
         foreach($response->getHeaders() as $header => $value) {
-            if (is_array($value)) foreach($value as $val) header("$header: $val"); elseif ($value == '') header($header);
+            if (is_array($value)) foreach($value as $val) header("$header: $val"); elseif ($value === '') header($header);
             else header("$header: $value");
         }
     }
@@ -377,7 +401,7 @@ class Client implements SplSubject, ClientInterface {
         /**
          * @var Response $response
          */
-        if (ob_get_level() == 0) ob_start();
+        if (ob_get_level() === 0) ob_start();
         $this->sendHeaders($response);
         $sleep = $response->getSleep();
         $chunkSize = 16 * 1024; // 16 KB
@@ -419,16 +443,19 @@ class Client implements SplSubject, ClientInterface {
         ini_set('memory_limit', '-1'); // unlimited
 
         // if Dumper exists, lets disable it.
-        if (class_exists('\Inane\Dumper\Dumper')) {
-            $originalValue = \Inane\Dumper\Dumper::$enabled;
-            \Inane\Dumper\Dumper::$enabled = false;
+        if (class_exists(Dumper::class)) {
+            $originalValue = Dumper::$enabled;
+            Dumper::$enabled = false;
         }
 
-        if ($response->isThrottled()) $this->sendBuffer($response, $fp); else $this->sendResponse($response->setBody(fread($fp, $byte_to)));
+        //        if ($response->isThrottled()) $this->sendBuffer($response, $fp); else $this->sendResponse($response->setBody(fread($fp, $byte_to)));
+        if ($response->isThrottled()) $this->sendBuffer($response, $fp); else fread($fp, $byte_to)
+            |> $response->setBody(...)
+            |> $this->sendResponse(...);
 
         // if Dumper exists, restore value.
-        if (class_exists('\Inane\Dumper\Dumper')) {
-            \Inane\Dumper\Dumper::$enabled = $originalValue;
+        if (class_exists(Dumper::class)) {
+            Dumper::$enabled = $originalValue;
         }
 
         fclose($fp);
@@ -450,7 +477,7 @@ class Client implements SplSubject, ClientInterface {
      *
      * @return int Always returns 0 to indicate the process status.
      */
-    protected function notifyProgressClients($resource, int $download_total, int $downloaded, int $upload_total, int $uploaded): int {
+    protected function notifyProgressClients(mixed $resource, int $download_total, int $downloaded, int $upload_total, int $uploaded): int {
         if ($download_total > 0) {
             $percent = ($downloaded / $download_total) * 100;
         } else {
@@ -478,10 +505,10 @@ class Client implements SplSubject, ClientInterface {
         $this->servProgress += $progress;
         if ($this->servProgress > $fileSize) $this->servProgress = $fileSize;
 
-        $percent = round($this->servProgress / $fileSize * 100, 0);
+        $percent = (int)round($this->servProgress / $fileSize * 100);
         if ($percent !== $this->servPercent) {
             $this->notify();
-            $this->servPercent = (int)$percent;
+            $this->servPercent = $percent;
         }
 
         return $this;
@@ -490,7 +517,7 @@ class Client implements SplSubject, ClientInterface {
     /**
      * Register Progress Listener
      *
-     * Adds a progress listener to receive notifications if it is not already registered.
+     * Adds a progress listener to receive notifications if it isn't already registered.
      *
      * @param NotifyProgressInterface $listener The listener to be registered.
      *
@@ -527,7 +554,10 @@ class Client implements SplSubject, ClientInterface {
 
             $headers = [];
             foreach($request->getHeaders() as $name => $values) {
-                $headers[] = ['name' => $name, 'value' => implode(', ', $values)];
+                $headers[] = [
+                    'name'  => $name,
+                    'value' => implode(', ', $values),
+                ];
             }
 
             [
@@ -604,12 +634,15 @@ class Client implements SplSubject, ClientInterface {
     #endregion Client Download Progress of Served Files
 
     /**
-     * serve response
+     * Send response
      *
-     * @param ResponseInterface $response response
-     * @param int               $options  flags
+     * This method sends the given response and terminates the script.
      *
-     * @return void
+     * @param ResponseInterface $response The response to be sent
+     *
+     * @return never This method never returns, it always exits after sending the response.
+     *
+     * @throws InvalidArgumentException If the response is not an instance of Response
      */
     public function send(ResponseInterface $response): never {
         /**
