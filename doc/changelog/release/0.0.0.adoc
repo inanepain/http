@@ -5,3 +5,5 @@
 :revdate: 2026-xx-xx
 :revremark: -dev
 
+* fix: Fixes a few minor issues in `Request`.
+* update: PHPDoc updates in  `Request`.
