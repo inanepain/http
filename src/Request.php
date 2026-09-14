@@ -191,7 +191,7 @@ class Request extends AbstractRequest implements Stringable {
      * @param string $url     The URL to use for creating the instance.
      * @param array  $headers An optional array of headers to include.
      *
-     * @return static A new instance initialized with the provided URL and headers.
+     * @return static A new instance initialised with the provided URL and headers.
      *
      * @throws RuntimeException|JsonException If the provided URL is invalid.
      */
@@ -286,7 +286,7 @@ class Request extends AbstractRequest implements Stringable {
      *
      * @return mixed The value of the specified query parameter, the complete query options, or the default value if the parameter is not found.
      *
-     * @throws JsonException If the query object could not be initialized.
+     * @throws JsonException If the query object could not be initialised.
      */
     public function getQuery(?string $param = null, ?string $default = null): mixed {
         if (!isset($this->query)) $this->query = new Options($_GET);
