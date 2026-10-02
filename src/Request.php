@@ -10,17 +10,17 @@
  *
  * PHP version 8.5
  *
- * @author Philip Michael Raab<philip@cathedral.co.za>
- * @package inanepain\http
+ * @author   Philip Michael Raab<philip@cathedral.co.za>
+ * @package  inanepain\http
  * @category http
  *
- * @license UNLICENSE
- * @license https://unlicense.org/UNLICENSE UNLICENSE
+ * @license  UNLICENSE
+ * @license  https://unlicense.org/UNLICENSE UNLICENSE
  *
  * _version_ $version
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Inane\Http;
 
@@ -85,7 +85,10 @@ class Request extends AbstractRequest implements Stringable {
     /**
      * strings to remove from property names
      */
-    public static array $propertyClean = ['request_', 'http_'];
+    public static array $propertyClean = [
+        'request_',
+        'http_',
+    ];
 
     /**
      * Response
@@ -155,11 +158,11 @@ class Request extends AbstractRequest implements Stringable {
         ?string                  $version = null,
         bool                     $allowAllProperties = true,
         ?Response                $response = null,
-        bool                     $importApacheHeaders = false
+        bool                     $importApacheHeaders = false,
     ) {
         if ($importApacheHeaders) {
-            foreach (function_exists('apache_request_headers') ? apache_request_headers() : [] as $header => $value) {
-                if (!array_any($headers, function (string|array $v, string $k) use ($header) {
+            foreach(function_exists('apache_request_headers') ? apache_request_headers() : [] as $header => $value) {
+                if (!array_any($headers, function(string|array $v, string $k) use ($header) {
                     return strtolower($k) === strtolower($header);
                 })) $headers[$header] = $value;
             }
@@ -209,7 +212,7 @@ class Request extends AbstractRequest implements Stringable {
      */
     private function bootstrapSelf(): void {
         $data = [];
-        foreach ($_SERVER as $key => $value) $data[$this->toCamelCase($key)] = $value;
+        foreach($_SERVER as $key => $value) $data[$this->toCamelCase($key)] = $value;
 
         if ($this->allowAllProperties) $this->magicPropertiesAllowed = array_keys($data);
 
@@ -233,26 +236,30 @@ class Request extends AbstractRequest implements Stringable {
         $accept = explode(',', $this->accept);
         $type = 'text/html';
         if (in_array('application/json', $accept) || in_array('*/*', $accept)) $type = 'application/json';
-        else if (in_array('application/xml', $accept)) $type = 'application/xml';
+        elseif (in_array('application/xml', $accept)) $type = 'application/xml';
+
         return $type;
     }
 
     /**
      * Retrieves the current response object or initialises a new one if it doesn't exist.
      *
-     * @param string|null $body    The response body. If null, a default response is created.
-     * @param int         $status  The HTTP status code for the response. Defaults to 200.
-     * @param array|null  $headers An array of headers to set for the response. If null, default headers are used.
+     * @param null|string         $body    The response body. If null, a default response is created.
+     * @param null|HttpStatus|int $status  The HTTP status code for the response. Defaults to HttpStatus::Ok (200).
+     * @param null|array          $headers An array of headers to set for the response. If null, default headers are used.
      *
      * @return Response The response object.
+     *
      * @throws BadMethodCallException
      * @throws UnexpectedValueException
      */
-    public function getResponse(?string $body = null, int $status = 200, ?array $headers = null): Response {
-        if (!isset($this->response)) {
-            $this->response = $body === null ? new Response() : new Response($body, $status, $headers ?? ['Content-Type' => $this->getAccept()]);
-            $this->response->setRequest($this);
-        } else if (!is_null($body)) $this->response->setBody($body);
+    public function getResponse(?string $body = null, null|HttpStatus|int $status = null, ?array $headers = null): Response {
+        if (!isset($this->response)) $this->response = new Response($body, $status ?? HttpStatus::Ok, $headers ?? ['Content-Type' => $this->getAccept()])->setRequest($this);
+        else {
+            if ($body !== null) $this->response->setBody($body);
+            if ($status !== null) $this->response->setStatus($status);
+        }
+
         return $this->response;
     }
 
@@ -261,8 +268,8 @@ class Request extends AbstractRequest implements Stringable {
      *
      * @since 0.6.6 Checks $_POST and php://input for data
      *
-     * @param string|null $param   Name of the POST parameter to retrieve. If null, returns all POST data.
-     * @param string|null $default Default value to return if the specified POST parameter is not found. Ignored if $param is null.
+     * @param null|string $param   Name of the POST parameter to retrieve. If null, returns all POST data.
+     * @param null|string $default Default value to return if the specified POST parameter is not found. Ignored if $param is null.
      *
      * @return Options An Options object containing the requested POST parameter or all POST data.
      *
@@ -273,16 +280,18 @@ class Request extends AbstractRequest implements Stringable {
             if (!isset($this->post)) $this->post = new Options((count($_POST) > 0 ? $_POST : Json::decode(file_get_contents('php://input'))) ?? []);
 
             if (!is_null($param)) return $this->post->get($param, $default);
+
             return $this->post;
         }
+
         return new Options([]);
     }
 
     /**
      * Retrieves a query parameter value or the complete query options.
      *
-     * @param string|null $param   The name of the query parameter to retrieve. If null, the complete query options are returned.
-     * @param string|null $default The default value to return if the specified parameter is not found.
+     * @param null|string $param   The name of the query parameter to retrieve. If null, the complete query options are returned.
+     * @param null|string $default The default value to return if the specified parameter is not found.
      *
      * @return mixed The value of the specified query parameter, the complete query options, or the default value if the parameter is not found.
      *
@@ -292,6 +301,7 @@ class Request extends AbstractRequest implements Stringable {
         if (!isset($this->query)) $this->query = new Options($_GET);
 
         if (!is_null($param)) return $this->query->get($param, $default);
+
         return $this->query;
     }
 
@@ -303,7 +313,8 @@ class Request extends AbstractRequest implements Stringable {
      * @throws RuntimeException|JsonException If the query parameters cannot be converted to an array.
      */
     public function buildQuery(): string {
-        return http_build_query($this->getQuery()->toArray());
+        return http_build_query($this->getQuery()
+            ->toArray());
     }
 
     /**
@@ -313,6 +324,7 @@ class Request extends AbstractRequest implements Stringable {
      */
     public function getFiles(): array {
         if (!isset($this->files)) $this->files = $_FILES;
+
         return $this->files;
     }
 

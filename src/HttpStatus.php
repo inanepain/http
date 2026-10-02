@@ -10,17 +10,17 @@
  *
  * PHP version 8.5
  *
- * @author Philip Michael Raab<philip@cathedral.co.za>
- * @package inanepain\http
+ * @author   Philip Michael Raab<philip@cathedral.co.za>
+ * @package  inanepain\http
  * @category http
  *
- * @license UNLICENSE
- * @license https://unlicense.org/UNLICENSE UNLICENSE
+ * @license  UNLICENSE
+ * @license  https://unlicense.org/UNLICENSE UNLICENSE
  *
  * _version_ $version
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Inane\Http;
 
@@ -97,7 +97,7 @@ enum HttpStatus: int implements CoreEnumInterface {
     case ImUsed = 226;
     #endregion 2xx: Success
 
-     #region 3xx: Redirection
+    #region 3xx: Redirection
     /**
      * 300
      */
@@ -399,11 +399,13 @@ enum HttpStatus: int implements CoreEnumInterface {
      */
     public function message(): string {
         return match ($this) {
-                // 1xx Informational
+            #region 1xx: Informational
             static::Continue => 'The server has received the request headers, and that the client should proceed to send the request body.',
             static::SwitchingProtocols => 'The requester has asked the server to switch protocols and the server is acknowledging that it will do so.',
             static::Processing => 'The server has received and is processing the request, but no response is available yet.',
-                // 2xx Success
+            #endregion 1xx: Informational
+
+            #region 2xx: Success
             static::Ok => 'The standard response for successful HTTP requests.',
             static::Created => 'The request has been fulfilled, and a new resource has been created.',
             static::Accepted => 'The request has been accepted but has not been processed yet. This code does not guarantee that the request will process successfully.',
@@ -414,7 +416,9 @@ enum HttpStatus: int implements CoreEnumInterface {
             static::MultiStatus => 'The message body that follows is an XML message and can contain a number of separate response codes, depending on how many sub-requests were made.',
             static::AlreadyReported => "The members of a DAV binding have already been enumerated in a previous reply to this request and aren't being included again.",
             static::ImUsed => 'The server has fulfilled a GET request for the resource, and the response is a representation representing the result of one or more instance-manipulations applied to the current instance.',
-                // 3xx Redirection
+            #endregion 2xx: Success
+
+            #region 3xx: Redirection
             static::MultipleChoices => 'There are multiple options that the client may follow.',
             static::MovedPermanently => 'The resource has been moved, and all further requests should reference its new URI.',
             static::Found => 'The HTTP 1.0 specification described this status as "Moved Temporarily", but popular browsers respond to this status similar to behaviour intended for 303. The resource can be retrieved by referencing the returned URI.',
@@ -424,8 +428,10 @@ enum HttpStatus: int implements CoreEnumInterface {
             static::SwitchProxy => 'Deprecated in HTTP 1.1. Used to mean that later requests should be sent using the specified proxy.',
             static::TemporaryRedirect => 'HTTP 1.1. The request should be repeated with the URI provided in the response, but future requests should still call the original URI.',
             static::PermanentRedirect => 'Experimental. The request and all future requests should be repeated with the URI provided in the response. The HTTP method is not allowed to be changed in the subsequent request.',
-//            static::ResumeIncomplete => 'This code is used in the Resumable HTTP Requests Proposal to resume aborted PUT or POST requests',
-                // 4xx Client Error
+            //            static::ResumeIncomplete => 'This code is used in the Resumable HTTP Requests Proposal to resume aborted PUT or POST requests',
+            #endregion 3xx: Redirection
+
+            #region 4xx: Client Error
             static::BadRequest => 'The request could not be fulfilled due to the incorrect syntax of the request.',
             static::Unauthorized => 'The requester is not authorised to access the resource. This is similar to 403 but is used in cases where authentication is expected but has failed or has not been provided.',
             static::PaymentRequired => 'Reserved for future use. Some web services use this as an indication that the client has sent an excessive number of requests.',
@@ -449,7 +455,7 @@ enum HttpStatus: int implements CoreEnumInterface {
             static::UnprocessableEntity => "The request was formatted correctly but can't be processed in its current form. Often used when the specified parameters fail validation errors.",
             static::Locked => "The requested resource was found but has been locked and won't be returned.",
             static::FailedDependency => 'The request failed due to a failure of a previous request.',
-//            static::TooEarly => 'Indicates that the server is unwilling to risk processing a request that might be replayed.',
+            //            static::TooEarly => 'Indicates that the server is unwilling to risk processing a request that might be replayed.',
             static::UpgradeRequired => 'The client should repeat the request using an upgraded protocol such as TLS 1.0.',
             static::PreconditionRequired => 'The origin server requires the request to be conditional.',
             static::TooManyRequests => 'The user has sent too many requests in a given amount of time ("rate limiting").',
@@ -459,15 +465,17 @@ enum HttpStatus: int implements CoreEnumInterface {
             static::RetryWith => 'A Microsoft extension. The request should be retried after performing the appropriate action.',
             static::BlockedByWindowsParentalControls => 'A Microsoft extension. This error is given when Windows Parental Controls are turned on and are blocking access to the given webpage.',
             static::UnavailableForLegalReasons => 'A server operator has received a legal demand to deny access to a resource or to a set of resources that includes the requested resource.',
-//            static::Redirect => 'Used in Exchange ActiveSync if there either is a more efficient server to use or the server cannot access the users\' mailbox.',
+            //            static::Redirect => 'Used in Exchange ActiveSync if there either is a more efficient server to use or the server cannot access the users\' mailbox.',
             static::RequestHeaderTooLarge => 'Nginx internal code is similar to 431, but it was introduced earlier in version 0.9.4 (on January 21, 2011).',
             static::CertError => 'Nginx internal code used when SSL client certificate error occurred to distinguish it from 4XX in a log and an error page redirection.',
             static::NoCert => "Nginx internal code used when the client didn't provide a certificate to distinguish it from 4XX in a log and an error page redirection.",
             static::HttpToHttps => 'Nginx internal code used for the plain HTTP requests that are sent to HTTPS port to distinguish it from 4XX in a log and an error page redirection.',
             static::TokenExpiredInvalid => 'Returned by ArcGIS for Server. A code of 498 indicates an expired or otherwise invalid token.',
             static::ClientClosedRequest => 'Used in Nginx logs to indicate when the connection has been closed by the client while the server is still processing its request, making the server unable to send a status code back.',
-//            static::TokenRequired => 'Returned by ArcGIS for Server. A code of 499 indicates that a token is required (if no token was submitted).',
-                // 5xx Server Error
+            //            static::TokenRequired => 'Returned by ArcGIS for Server. A code of 499 indicates that a token is required (if no token was submitted).',
+            #endregion 4xx: Client Error
+
+            #region 5xx: Server Error
             static::InternalServerError => 'A generic status for an error in the server itself.',
             static::NotImplemented => 'The server cannot respond to the request. This usually implies that the server could possibly support the request in the future — otherwise a 4xx status may be more appropriate.',
             static::BadGateway => "The server is acting as a proxy and didn't receive an acceptable response from the upstream server.",
@@ -488,6 +496,7 @@ enum HttpStatus: int implements CoreEnumInterface {
             static::SslHandshakeFailed => "CloudFlare couldn't negotiate an SSL/TLS handshake with the origin server.",
             static::InvalidSslCertificate => "CloudFlare couldn't validate the SSL/TLS certificate that the origin server presented.",
             static::RailgunError => 'The request timed out or failed after the WAN connection has been established.',
+            #endregion 5xx: Server Error
             default => 'UNKNOWN!',
         };
     }
@@ -499,11 +508,13 @@ enum HttpStatus: int implements CoreEnumInterface {
      */
     public function title(): string {
         return match ($this) {
-                // 1xx Informational
+            #region 1xx: Informational
             static::Continue => 'Continue',
             static::SwitchingProtocols => 'Switching protocols',
             static::Processing => 'Processing',
-                // 2xx Success
+            #endregion 1xx: Informational
+
+            #region 2xx: Success
             static::Ok => 'HTTP/1.1 200 OK', // FINAL
             static::Created => 'Created',
             static::Accepted => 'Accepted',
@@ -514,7 +525,9 @@ enum HttpStatus: int implements CoreEnumInterface {
             static::MultiStatus => 'MULTI Status',
             static::AlreadyReported => 'Already reported',
             static::ImUsed => 'Im used',
-                // 3xx Redirection
+            #endregion 2xx: Success
+
+            #region 3xx: Redirection
             static::MultipleChoices => 'Multiple choices',
             static::MovedPermanently => 'Moved permanently',
             static::Found => 'Found',
@@ -524,8 +537,10 @@ enum HttpStatus: int implements CoreEnumInterface {
             static::SwitchProxy => 'Switch proxy',
             static::TemporaryRedirect => 'Temporary redirect',
             static::PermanentRedirect => 'Permanent redirect',
-//            static::ResumeIncomplete => 'Resume incomplete',
-                // 4xx Client Error
+            //            static::ResumeIncomplete => 'Resume incomplete',
+            #endregion 3xx: Redirection
+
+            #region 4xx: Client Error
             static::BadRequest => 'Bad request',
             static::Unauthorized => 'Unauthorized',
             static::PaymentRequired => 'Payment required',
@@ -549,7 +564,7 @@ enum HttpStatus: int implements CoreEnumInterface {
             static::UnprocessableEntity => 'Unprocessable entity',
             static::Locked => 'Locked',
             static::FailedDependency => 'Failed dependency',
-//            static::TooEarly => 'Too early',
+            //            static::TooEarly => 'Too early',
             static::UpgradeRequired => 'Upgrade required',
             static::PreconditionRequired => 'Precondition required',
             static::TooManyRequests => 'Too many requests',
@@ -559,15 +574,17 @@ enum HttpStatus: int implements CoreEnumInterface {
             static::RetryWith => 'Retry with',
             static::BlockedByWindowsParentalControls => 'Blocked by windows parental controls',
             static::UnavailableForLegalReasons => 'Unavailable for legal reasons',
-//            static::Redirect => 'Redirect',
+            //            static::Redirect => 'Redirect',
             static::RequestHeaderTooLarge => 'Request header too large',
             static::CertError => 'Cert error',
             static::NoCert => 'No cert',
             static::HttpToHttps => 'Http to https',
             static::TokenExpiredInvalid => 'Token expired invalid',
             static::ClientClosedRequest => 'Client closed request',
-//            static::TokenRequired => 'Token required',
-                // 5xx Server Error
+            //            static::TokenRequired => 'Token required',
+            #endregion 4xx: Client Error
+
+            #region 5xx: Server Error
             static::InternalServerError => 'Internal server error',
             static::NotImplemented => 'Not implemented',
             static::BadGateway => 'Bad gateway',
@@ -588,6 +605,7 @@ enum HttpStatus: int implements CoreEnumInterface {
             static::SslHandshakeFailed => 'Ssl handshake failed',
             static::InvalidSslCertificate => 'Invalid ssl certificate',
             static::RailgunError => 'Railgun error',
+            #endregion 5xx: Server Error
             default => 'UNKNOWN!',
         };
     }

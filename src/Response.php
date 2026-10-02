@@ -10,17 +10,17 @@
  *
  * PHP version 8.5
  *
- * @author Philip Michael Raab<philip@cathedral.co.za>
- * @package inanepain\http
+ * @author   Philip Michael Raab<philip@cathedral.co.za>
+ * @package  inanepain\http
  * @category http
  *
- * @license UNLICENSE
- * @license https://unlicense.org/UNLICENSE UNLICENSE
+ * @license  UNLICENSE
+ * @license  https://unlicense.org/UNLICENSE UNLICENSE
  *
  * _version_ $version
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Inane\Http;
 
@@ -37,9 +37,11 @@ use Psr\Http\Message\{
 use SimpleXMLElement;
 use Stringable;
 
+use function explode;
 use function htmlspecialchars;
 use function in_array;
-use function is_null;
+use function is_array;
+use function is_int;
 use function is_numeric;
 
 use const null;
@@ -104,21 +106,26 @@ class Response extends Message implements ResponseInterface, Stringable {
     public function withStatus(int $code, string $reasonPhrase = ''): ResponseInterface {
         $new = clone $this;
         $new->setStatus($code);
+
         return $new;
     }
 
     public function getReasonPhrase(): string {
-        return $this->getStatus()->title();
+        return $this->getStatus()
+            ->title()
+        ;
     }
 
     /**
      * set: request
      *
      * @param RequestInterface $request request
+     *
      * @return Response response
      */
     public function setRequest(RequestInterface $request): self {
         if (!isset($this->request)) $this->request = $request;
+
         return $this;
     }
 
@@ -129,15 +136,16 @@ class Response extends Message implements ResponseInterface, Stringable {
      */
     public function getRequest(): Request {
         if (!isset($this->request)) $this->request = new Request(allowAllProperties: true, response: $this);
+
         return $this->request;
     }
 
     /**
      * Response
      *
-     * @param string|StreamInterface|null $body    Request body
-     * @param int|HttpStatus $status
-     * @param array $headers headers
+     * @param null|string|StreamInterface $body    Request body
+     * @param int|HttpStatus              $status
+     * @param array                       $headers headers
      *
      * @return void
      *
@@ -145,7 +153,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @throws BadMethodCallException
      */
     public function __construct(string|null|StreamInterface $body = null, int|HttpStatus $status = 200, array $headers = []) {
-        if (!is_null($body)) {
+        if ($body !== null) {
             if (!($body instanceof StreamInterface)) $body = new Stream($body);
             $this->stream = $body;
         }
@@ -157,24 +165,27 @@ class Response extends Message implements ResponseInterface, Stringable {
      * Create response from array
      *
      * @param array $array
+     *
      * @return Response
      */
     public static function fromArray(array $array): Response {
         $opt = new Options($array);
         $response = new static($opt->get('body', ''), $opt->get('status', 200), $opt->get('headers', []));
         if ($opt->offsetExists('request')) $response->setRequest($opt->get('request'));
+
         return $response;
     }
 
     /**
      * array to xml
      *
-     * @param array $data
+     * @param array            $data
      * @param SimpleXMLElement $xml_data
+     *
      * @return void
      */
-    protected function arrayToXml($data, SimpleXMLElement &$xml_data): void {
-        foreach ($data as $key => $value) {
+    protected function arrayToXml($data, SimpleXMLElement $xml_data): void {
+        foreach($data as $key => $value) {
             if (is_array($value)) {
                 if (is_numeric($key)) $key = 'item' . $key;
                 $subnode = $xml_data->addChild($key);
@@ -189,36 +200,31 @@ class Response extends Message implements ResponseInterface, Stringable {
      * add header
      *
      * @param string $name
-     * @param mixed $value
-     * @param bool $replace
+     * @param mixed  $value
+     * @param bool   $replace
+     *
      * @return Response
      */
     public function addHeader(string $name, mixed $value, bool $replace = true): self {
-        $normalized = strtolower($name);
-
-        if (isset($this->headerNames[$normalized])) {
-            $name = $this->headerNames[$normalized];
-            $this->headers[$name] = array_merge($this->headers[$name], $value);
-        } else {
-            $this->headerNames[$normalized] = $name;
-            $this->headers[$name] = $value;
-        }
-
-        $this->headers[$name] = [$value];
+        $header = $this->getHeaderObject($name);
+        $header->setValue($value, $replace);
+        $this->headers[$header->key] = $header;
+        
         return $this;
     }
 
     /**
      * get: status
      *
-     * @param HttpStatus|int $status
+     * @param HttpStatus|int|string $status
+     *
      * @return Response
-     * @throws UnexpectedValueException
-     * @throws BadMethodCallException
      */
-    public function setStatus(HttpStatus|int $status): self {
+    public function setStatus(HttpStatus|int|string $status): self {
         if ($status instanceof HttpStatus) $this->status = $status;
-        else $this->status = HttpStatus::from($status);
+        elseif (is_int($status)) $this->status = HttpStatus::from($status);
+        else $this->status = HttpStatus::tryFromName($status, true);
+
         return $this;
     }
 
@@ -234,13 +240,14 @@ class Response extends Message implements ResponseInterface, Stringable {
     /**
      * set: status code
      *
+     * @deprecated 0.5.0
+     *
      * @param mixed $statusCode
      *
      * @return self
      *
-     * @throws UnexpectedValueException
      * @throws BadMethodCallException
-     * @deprecated 0.5.0
+     * @throws UnexpectedValueException
      */
     public function setStatusCode(HttpStatus $statusCode): self {
         return $this->setStatus($statusCode);
@@ -259,10 +266,12 @@ class Response extends Message implements ResponseInterface, Stringable {
      * set body
      *
      * @param string $body
+     *
      * @return self
      */
     public function setBody(string $body): self {
         $this->stream = new Stream($body);
+
         return $this;
     }
 
@@ -272,12 +281,18 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @return string body
      */
     public function getContents(): string {
-        $body = $this->getBody()->getContents();
-        if (in_array($this->getHeaderLine('Content-Type'), ['application/json', '*/*']))
+        $body = $this->getBody()
+            ->getContents()
+        ;
+        if (in_array($this->getHeaderLine('Content-Type'), [
+            'application/json',
+            '*/*',
+        ]))
             return Json::encode($body);
-        else if (in_array($this->getHeaderLine('Content-Type'), ['application/xml'])) {
+        elseif (in_array($this->getHeaderLine('Content-Type'), ['application/xml'])) {
             $xml = new SimpleXMLElement('<root/>');
             $this->arrayToXml($body, $xml);
+
             return $xml->asXML();
         }
 
@@ -376,6 +391,7 @@ class Response extends Message implements ResponseInterface, Stringable {
     public function getBandwidth(): int {
         $chunkSize = 16 * 1024; // 16 KB
         $bytesPerSecond = $chunkSize / ($this->_sleep / 1_000_000);
+
         return ($bytesPerSecond * static::$rm) / 1024;
         // return ($bytesPerSecond * 8) / 1024;
         // return ($bytesPerSecond) / 1024;
@@ -393,8 +409,8 @@ class Response extends Message implements ResponseInterface, Stringable {
      * $speed 0 = no limit
      *
      * @param null|string $src_file file
-     * @param bool $force download, not view in browser
-     * @param int $speed kbSec
+     * @param bool        $force    download, not view in browser
+     * @param int         $speed    kbSec
      *
      * @return Response
      *
@@ -407,6 +423,7 @@ class Response extends Message implements ResponseInterface, Stringable {
         if (!$file->isValid()) {
             $this->setStatus(HttpStatus::NotFound);
             $this->setBody('file invalid:' . $file->getPathname());
+
             return $this;
         }
 
@@ -434,9 +451,9 @@ class Response extends Message implements ResponseInterface, Stringable {
     protected function updateFileHeaders() {
         $this->addHeader('Accept-Ranges', 'bytes');
         $this->addHeader('Content-type', $this->_file->getMimetype() ?? 'application/octet-stream');
-        $this->addHeader("Pragma", "no-cache");
+        $this->addHeader('Pragma', 'no-cache');
         $this->addHeader('Cache-Control', 'public, must-revalidate, max-age=0');
-        $this->addHeader("Content-Length", $this->_downloadSize);
+        $this->addHeader('Content-Length', $this->_downloadSize);
     }
 
     /**
@@ -451,8 +468,8 @@ class Response extends Message implements ResponseInterface, Stringable {
 
         $fileSize = $this->_file->getSize();
 
-        $start = (int) $ranges[0];
-        $stop = (int) ($ranges[1] == '' ? $fileSize - 1 : $ranges[1]);
+        $start = (int)$ranges[0];
+        $stop = (int)($ranges[1] == '' ? $fileSize - 1 : $ranges[1]);
 
         $this->_downloadSize = $stop - $start + 1;
         $this->_downloadStart = $start;
@@ -468,8 +485,8 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @return void
      */
     protected function forceDownload() {
-        $this->addHeader("Content-Description", 'File Transfer');
+        $this->addHeader('Content-Description', 'File Transfer');
         $this->addHeader('Content-Disposition', 'attachment; filename="' . $this->_file->getFilename() . '";');
-        $this->addHeader("Content-Transfer-Encoding", "binary");
+        $this->addHeader('Content-Transfer-Encoding', 'binary');
     }
 }

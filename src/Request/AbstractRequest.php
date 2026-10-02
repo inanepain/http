@@ -94,11 +94,11 @@ class AbstractRequest extends Message implements RequestInterface {
         $this->setUri($uri);
 
         if (count($headers) > 0) $this->setHeaders($headers);
-        if (!is_null($version)) $this->protocol = $version;
+        if ($version) $this->protocol = $version;
 
-        if (!is_null($uri) && !isset($this->headerNames['host']) && count($headers) > 0) $this->updateHostFromUri();
+        if ($uri && !$this->hasHeader('host') && count($headers) > 0) $this->updateHostFromUri();
 
-        if (!is_null($body)) {
+        if ($body) {
             if (!($body instanceof StreamInterface)) $body = new Stream($body);
             $this->stream = $body;
         }
@@ -306,7 +306,7 @@ class AbstractRequest extends Message implements RequestInterface {
             "uri" => $uri
         ]);
 
-        if (!$preserveHost || !isset($this->headerNames['host'])) $new->updateHostFromUri();
+        if (!$preserveHost || !$this->hasHeader('host')) $new->updateHostFromUri();
 
         return $new;
     }
@@ -323,13 +323,9 @@ class AbstractRequest extends Message implements RequestInterface {
 
         if (($port = $this->uri->getPort()) !== null) $host .= ':' . $port;
 
-        if (isset($this->headerNames['host'])) $header = $this->headerNames['host'];
-        else {
-            $header = 'Host';
-            $this->headerNames['host'] = 'Host';
-        }
-        // Ensure Host is the first header.
-        // See: http://tools.ietf.org/html/rfc7230#section-5.4
-        $this->headers = [$header => [$host]] + $this->headers;
+        $header = $this->getHeaderObject('host');
+        $header->setValue($host, true);
+
+        if (!$this->hasHeader($header->key)) $this->headers[$header->key] = $header;
     }
 }

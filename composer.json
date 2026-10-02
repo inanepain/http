@@ -44,6 +44,7 @@
         "php": ">=8.5",
         "ext-curl": "*",
         "ext-fileinfo": "*",
+        "ext-simplexml": "*",
         "psr/http-message": "*",
         "psr/http-client": "*",
         "inanepain/file": ">=0.3.0 || dev-master || dev-develop",
