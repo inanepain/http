@@ -108,7 +108,7 @@ class Response extends Message implements ResponseInterface, Stringable {
     }
 
     public function getReasonPhrase(): string {
-        return $this->getStatus()->message();
+        return $this->getStatus()->title();
     }
 
     /**
@@ -252,7 +252,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @return int
      */
     public function getStatusCode(): int {
-        return $this->getStatus()->code();
+        return $this->getStatus()->value;
     }
 
     /**

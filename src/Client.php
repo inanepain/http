@@ -356,13 +356,13 @@ class Client implements SplSubject, ClientInterface {
      */
     protected function sendHeaders(ResponseInterface $response): void {
         http_response_code($response->getStatus()
-            ->code());
+            ->value);
 
         /**
          * @var Response $response
          */
         if ($response->getStatus() === HttpStatus::PartialContent || $response->getStatus() === HttpStatus::Ok) header($response->getStatus()
-            ->message());
+            ->title());
 
         foreach($response->getHeaders() as $header => $value) {
             if (is_array($value)) foreach($value as $val) header("$header: $val"); elseif ($value === '') header($header);
