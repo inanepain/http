@@ -34,28 +34,46 @@ use Psr\Http\Message\{
  * @version 0.6.3
  */
 class Message implements MessageInterface {
-    /**#@+
-     * @const string Version constant numbers
+    /**
+     * HTTP/1.0 protocol version.
+     *
+     * @var string
      */
     const string VERSION_10 = '1.0';
 
+    /**
+     * HTTP/1.1 protocol version.
+     *
+     * @var string
+     */
     const string VERSION_11 = '1.1';
 
+    /**
+     * HTTP/2 protocol version.
+     *
+     * @var string
+     */
     const string VERSION_2  = '2';
 
-    /**#@-*/
-
     /**
-     * message headers
+     * Message headers keyed by normalised names.
      *
      * @var array<string, Header>
      */
     protected array $headers = [];
 
-    /** @var string */
+    /**
+     * HTTP protocol version without the protocol name.
+     *
+     * @var string
+     */
     protected string $protocol = self::VERSION_11;
 
-    /** @var null|StreamInterface */
+    /**
+     * Message body stream, initialised on first access if absent.
+     *
+     * @var StreamInterface|null
+     */
     protected ?StreamInterface $stream;
 
     /**
@@ -97,29 +115,16 @@ class Message implements MessageInterface {
      * The keys represent the header name as it will be sent over the wire, and
      * each value is an array of strings associated with the header.
      *
-     *     // Represent the headers as a string
-     *     foreach ($message->getHeaders() as $name => $values) {
-     *         echo $name . ": " . implode(", ", $values) {
-     * }
-     *     }
-     *
-     *     // Emit headers iteratively:
-     *     foreach ($message->getHeaders() as $name => $values) {
-     *         foreach ($values as $value) {
-     *             header(sprintf('%s: %s', $name, $value), false) {
-     * }
-     *         }
-     *     }
-     *
      * While header names are not case-sensitive, getHeaders() will preserve the
      * exact case in which headers were originally specified.
      *
-     * @return array<string, string[]> Returns an associative array of the message's headers. Each
-     *     key MUST be a header name, and each value MUST be an array of strings
-     *     for that header.
+     * @return array<string, array<array-key, string>> Header values keyed by original names.
      */
     public function getHeaders(): array {
-        return array_map(static fn($values) => $values->toArray(), $this->headers);
+        $headers = [];
+        // Export original header names rather than normalised lookup keys.
+        foreach($this->headers as $header) $headers += $header->toArray();
+        return $headers;
     }
 
     /**
@@ -135,7 +140,15 @@ class Message implements MessageInterface {
         return isset($this->headers[Header::normalise($name)]);
     }
 
+    /**
+     * Retrieve a header object or create an empty, unstored header if absent.
+     *
+     * @param string $name Case-insensitive header field name.
+     *
+     * @return Header Stored header object or a new empty header.
+     */
     public function getHeaderObject(string $name): Header {
+        // Missing headers are not added to the message by a lookup.
         if (!$this->hasHeader($name)) return new Header($name);
         return $this->headers[Header::normalise($name)];
     }
@@ -151,7 +164,7 @@ class Message implements MessageInterface {
      *
      * @param string $name Case-insensitive header field name.
      *
-     * @return array An array of string values as provided for the given
+     * @return array<array-key, string> An array of string values as provided for the given
      *    header. If the header does not appear in the message, this method MUST
      *    return an empty array.
      */
@@ -197,6 +210,8 @@ class Message implements MessageInterface {
      * @param string|string[] $value Header value(s).
      *
      * @return static
+     *
+     * @throws \TypeError If the value is neither a string nor an array.
      */
     public function withHeader(string $name, $value): MessageInterface {
         $new = clone $this;
@@ -220,6 +235,8 @@ class Message implements MessageInterface {
      * @param string|string[] $value Header value(s).
      *
      * @return static
+     *
+     * @throws \TypeError If the value is neither a string nor an array.
      */
     public function withAddedHeader(string $name, $value): MessageInterface {
         $new = clone $this;
@@ -254,6 +271,7 @@ class Message implements MessageInterface {
      * @return StreamInterface Returns the body as a stream.
      */
     public function getBody(): StreamInterface {
+        // Create an empty memory stream only when the body is first requested.
         if (!isset($this->stream)) $this->stream = new Stream();
 
         return $this->stream;
@@ -281,11 +299,18 @@ class Message implements MessageInterface {
     }
 
     /**
-     * @param array<string|int, string|string[]> $headers
+     * Replace all headers, merging values for case-insensitive name matches.
+     *
+     * @param array<string, string|array<array-key, string>> $headers Header names and values.
+     *
+     * @return void
+     *
+     * @throws \TypeError If a header name is not a string or a value is neither a string nor an array.
      */
     protected function setHeaders(array $headers): void {
         $this->headers = [];
         foreach($headers as $name => $value) {
+            // Reuse a stored header so differently cased names merge their values.
             $header = $this->getHeaderObject($name);
             $header->setValue($value);
 

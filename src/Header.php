@@ -33,8 +33,6 @@ use function implode;
 use function is_array;
 use function strtolower;
 
-use const __PROPERTY__;
-
 /**
  * Header
  *
@@ -164,6 +162,11 @@ class Header implements Stringable {
         return $this;
     }
 
+    /**
+     * Retrieve the stored header values.
+     *
+     * @return array<array-key, string> Header values.
+     */
     public function getValue(): array {
         return $this->value;
     }
@@ -213,7 +216,7 @@ class Header implements Stringable {
     /**
      * Export the stored values keyed by the original header name.
      *
-     * @return array<string, array<string>> Header name and values.
+     * @return array<string, array<array-key, string>> Header name and values.
      */
     public function toArray(): array {
         return [$this->name => $this->value];

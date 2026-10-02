@@ -56,32 +56,40 @@ use const null;
  */
 class AbstractRequest extends Message implements RequestInterface {
     /**
-     * Method
+     * HTTP method used by the request.
+     *
+     * @var HttpMethod
      */
     private HttpMethod $method;
 
     /**
-     * target
+     * Explicit request target, otherwise derived from the URI.
+     *
+     * @var string|null
      */
     private ?string $requestTarget;
 
     /**
-     * uri
+     * Request URI.
+     *
+     * @var UriInterface
      */
     private UriInterface $uri;
 
     /**
-     * __construct
+     * Initialise the request, using server values for an omitted method or URI.
      *
-     * @param null|string|HttpMethod   $method  HTTP method
-     * @param null|string|UriInterface $uri     URI for the request
-     * @param array                    $headers Headers to set on the request
-     * @param mixed                    $body    Body of the request
-     * @param ?string                  $version Protocol version
+     * @param null|string|HttpMethod $method HTTP method, or null to use the server method.
+     * @param null|string|UriInterface $uri Request URI, or null to derive it from server values.
+     * @param array<string, string|array<array-key, string>> $headers Header names and values.
+     * @param mixed $body Stream or source passed to Stream; other source types create an empty memory stream.
+     * @param string|null $version Protocol version, or null to retain the default.
      *
      * @return void
      *
-     * @throws RuntimeException InvalidArgumentException if invalid arguments are provided
+     * @throws RuntimeException If writing the body stream fails.
+     * @throws \Inane\Stdlib\Exception\RuntimeException If URI component processing fails.
+     * @throws \TypeError If the method is unsupported, a URI cannot be converted or headers have invalid types.
      */
     public function __construct(
         null|string|HttpMethod   $method = null,
@@ -107,10 +115,11 @@ class AbstractRequest extends Message implements RequestInterface {
     /**
      * Sets the HTTP method for the request.
      *
-     * @param null|string|HttpMethod $method The HTTP method to set. Accepts a string representation of the method,
-     *                                       an instance of HttpMethod, or null to use the default method.
+     * @param null|string|HttpMethod $method Method, or null to retain it or initialise it from server values.
      *
-     * @return self Returns the current instance of the class to allow for method chaining.
+     * @return self This request.
+     *
+     * @throws \TypeError If the method cannot be resolved to an HttpMethod case.
      */
     protected function setMethod(null|string|HttpMethod $method = null): self {
         if ($method) {
@@ -123,12 +132,14 @@ class AbstractRequest extends Message implements RequestInterface {
     }
 
     /**
-     * Builds and returns the origin part of a URL (scheme, host, and port) based on the provided server array.
+     * Build the URL origin from server values.
      *
-     * @param array $s                  The server array, typically $_SERVER, containing request information.
-     * @param bool  $use_forwarded_host Optional. Whether to use the 'X-Forwarded-Host' header if present. Default is false.
+     * @param array<string, mixed> $s Server values, typically from $_SERVER.
+     * @param bool $use_forwarded_host Whether to prefer HTTP_X_FORWARDED_HOST when present.
      *
-     * @return string The URL origin (e.g., "https://example.com:8080").
+     * @return string Scheme and authority, including a non-default port when using SERVER_NAME.
+     *
+     * @throws \TypeError If server values have incompatible types.
      */
     private static function urlOrigin(array $s, bool $use_forwarded_host = false): string {
         $ssl = (!empty($s['HTTPS']) && $s['HTTPS'] === 'on');
@@ -137,32 +148,38 @@ class AbstractRequest extends Message implements RequestInterface {
         $port = $s['SERVER_PORT'] ?? '80';
         $port = ((!$ssl && $port === '80') || ($ssl && $port === '443')) ? '' : ':' . $port;
         $host = ($use_forwarded_host && isset($s['HTTP_X_FORWARDED_HOST'])) ? $s['HTTP_X_FORWARDED_HOST'] : ($s['HTTP_HOST'] ?? null);
+        // Host headers already carry their port; append it only for the server-name fallback.
         $host = $host ?? ($s['SERVER_NAME'] ?? 'localhost') . $port;
 
         return $protocol . '://' . $host;
     }
 
     /**
-     * Builds and returns the full URL based on the provided server parameters.
+     * Build the full URL from server values.
      *
-     * @param array $s                  The server parameters, typically from $_SERVER.
-     * @param bool  $use_forwarded_host Whether to use the forwarded host (from HTTP headers) instead of the direct host.
+     * @param array<string, mixed> $s Server values, typically from $_SERVER.
+     * @param bool $use_forwarded_host Whether to prefer HTTP_X_FORWARDED_HOST when present.
      *
-     * @return string The constructed full URL.
+     * @return string Origin followed by the request URI.
+     *
+     * @throws \TypeError If server values have incompatible types.
      */
     private static function fullUrl(array $s, bool $use_forwarded_host = false): string {
         return static::urlOrigin($s, $use_forwarded_host) . ($s['REQUEST_URI'] ?? '');
     }
 
     /**
-     * Sets the URI for the request.
+     * Initialise the URI if it has not already been set.
      *
-     * @param null|string|UriInterface $uri  The URI to set. Accepts a string representation of the URI,
-     *                                       an instance of UriInterface, or null to use the default URI.
+     * @param null|string|UriInterface $uri URI, or null to derive it from server values.
      *
-     * @return self Returns the current instance of the class to allow for method chaining.
+     * @return self This request.
+     *
+     * @throws \Inane\Stdlib\Exception\RuntimeException If URI component processing fails.
+     * @throws \TypeError If a non-Uri instance is passed to the Uri constructor or server values have invalid types.
      */
     protected function setUri(null|string|UriInterface $uri = null): self {
+        // This initialiser leaves an existing URI unchanged; withUri() replaces it.
         if (!isset($this->uri)) {
             if (is_null($uri)) $uri = new Uri(static::fullUrl($_SERVER));
             elseif (!($uri instanceof Uri)) $uri = new Uri($uri);
@@ -186,11 +203,12 @@ class AbstractRequest extends Message implements RequestInterface {
      * If no URI is available, and no request-target has been specifically
      * provided, this method MUST return the string "/".
      *
-     * @return string
+     * @return string Explicit target or the URI path and query, with '/' as the default path.
      */
     public function getRequestTarget(): string {
         if (isset($this->requestTarget)) return $this->requestTarget;
 
+        // Origin-form targets include the path and query, but not the URI fragment.
         $target = $this->uri->getPath();
         if ($target === '') $target = '/';
         if ($this->uri->getQuery() !== '') $target .= '?' . $this->uri->getQuery();
@@ -220,9 +238,9 @@ class AbstractRequest extends Message implements RequestInterface {
     /**
      * Retrieves the HTTP method of the request.
      *
-     * @since 0.5.1
-     *
      * @return HttpMethod Returns the request method.
+     *
+     * @throws \TypeError If an uninitialised method cannot be resolved from server values.
      */
     public function getHttpMethod(): HttpMethod {
         if (!isset($this->method)) $this->setMethod();
@@ -234,6 +252,8 @@ class AbstractRequest extends Message implements RequestInterface {
      * Retrieves the HTTP method of the request.
      *
      * @return string Returns the request method.
+     *
+     * @throws \TypeError If an uninitialised method cannot be resolved from server values.
      */
     public function getMethod(): string {
         return $this->getHttpMethod()->value;
@@ -245,6 +265,8 @@ class AbstractRequest extends Message implements RequestInterface {
      * @param string $method The HTTP method to set for the request.
      *
      * @return RequestInterface Returns a new instance of the request with the specified method.
+     *
+     * @throws \TypeError If the method cannot be resolved to an HttpMethod case.
      */
     public function withMethod(string $method): RequestInterface {
         $new = clone $this;
@@ -297,7 +319,7 @@ class AbstractRequest extends Message implements RequestInterface {
      * @param UriInterface $uri          New request URI to use.
      * @param bool         $preserveHost Preserve the original state of the Host header.
      *
-     * @return static
+     * @return static This request if the URI is unchanged, otherwise a clone with the new URI.
      */
     public function withUri(UriInterface $uri, bool $preserveHost = false): static {
         if ($uri === $this->uri) return $this;
@@ -312,13 +334,16 @@ class AbstractRequest extends Message implements RequestInterface {
     }
 
     /**
-     * Update Host From Uri
+     * Replace the Host header with the URI host and optional port.
+     *
+     * Retain the existing header when the URI has no host.
      *
      * @return void
      */
     private function updateHostFromUri(): void {
         $host = $this->uri->getHost();
 
+        // A relative URI does not provide an authority to replace the Host header.
         if ($host === '') return;
 
         if (($port = $this->uri->getPort()) !== null) $host .= ':' . $port;
