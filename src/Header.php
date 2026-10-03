@@ -79,7 +79,7 @@ class Header implements Stringable {
     /**
      * Initialise the header name, values and formatting options.
      *
-     * @param string                         $name    Header name.
+     * @param string                          $name    Header name.
      * @param array<array-key, string>|string $value   Header values.
      * @param array<string, string>           $options Formatting options.
      *
@@ -147,12 +147,13 @@ class Header implements Stringable {
     /**
      * Replace stored values or merge additional unique values.
      *
-     * @param string|array<array-key, string> $value   Header values.
-     * @param bool                           $replace Whether to replace stored values.
+     * @param int|string|array<array-key, string> $value   Header values.
+     * @param bool                                $replace Whether to replace stored values.
      *
      * @return static This header.
      */
-    public function setValue(string|array $value, bool $replace = false): static {
+    public function setValue(int|string|array $value, bool $replace = false): static {
+        if (is_int($value)) $value = (string)$value;
         if (!is_array($value)) $value = [$value];
 
         // Replacement preserves the supplied values; merging removes duplicates.
@@ -174,7 +175,7 @@ class Header implements Stringable {
     /**
      * Join the stored header values.
      *
-     * @param string|null $delimiter Separator override, or null to use the configured separator.
+     * @param null|string $delimiter Separator override, or null to use the configured separator.
      *
      * @return string Joined header values.
      */
@@ -185,7 +186,7 @@ class Header implements Stringable {
     /**
      * Render the header name and values.
      *
-     * @param string|null $delimiter Separator override, or null to use the configured separator.
+     * @param null|string $delimiter Separator override, or null to use the configured separator.
      *
      * @return string Complete header line.
      */
@@ -196,7 +197,7 @@ class Header implements Stringable {
     /**
      * Render the header when invoked as a callable.
      *
-     * @param string|null $delimiter Separator override, or null to use the configured separator.
+     * @param null|string $delimiter Separator override, or null to use the configured separator.
      *
      * @return string Complete header line.
      */
