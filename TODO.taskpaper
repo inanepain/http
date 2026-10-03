@@ -1,5 +1,7 @@
 inanepain/http:
 	Http client (psr-18), request and response object message interfaces (psr-7).
+	- git-attributes @done(2026-10-03)
+	- tests: create test case. @PHPUnit
 	Progress Notification:
 		Handle sending notifications to listeners.
 		- Replace both current systems with a single one.
