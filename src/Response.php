@@ -24,10 +24,11 @@ declare(strict_types = 1);
 
 namespace Inane\Http;
 
+use Exception;
 use Inane\File\File;
+use Inane\Http\Exception\RuntimeException;
 use Inane\Stdlib\{
-    Exception\BadMethodCallException,
-    Exception\UnexpectedValueException,
+    Exception\JsonException,
     Json,
     Options};
 use Psr\Http\Message\{
@@ -85,7 +86,7 @@ class Response extends Message implements ResponseInterface, Stringable {
     protected int $_downloadSize = 0;
 
     /**
-     * Start serving file from
+     * Start serving a file from
      */
     protected int $_downloadStart = 0;
 
@@ -133,6 +134,9 @@ class Response extends Message implements ResponseInterface, Stringable {
      * get: request
      *
      * @return Request request
+     * @throws RuntimeException
+     * @throws JsonException
+     * @throws \Inane\Stdlib\Exception\RuntimeException
      */
     public function getRequest(): Request {
         if (!isset($this->request)) $this->request = new Request(allowAllProperties: true, response: $this);
@@ -149,8 +153,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      *
      * @return void
      *
-     * @throws UnexpectedValueException
-     * @throws BadMethodCallException
+     * @throws Exception\RuntimeException
      */
     public function __construct(string|null|StreamInterface $body = null, int|HttpStatus $status = 200, array $headers = []) {
         if ($body !== null) {
@@ -162,13 +165,14 @@ class Response extends Message implements ResponseInterface, Stringable {
     }
 
     /**
-     * Create response from array
+     * Create a response from an array
      *
      * @param array $array
      *
      * @return Response
+     * @throws JsonException|Exception\RuntimeException
      */
-    public static function fromArray(array $array): Response {
+    public static function fromArray(array $array): static {
         $opt = new Options($array);
         $response = new static($opt->get('body', ''), $opt->get('status', 200), $opt->get('headers', []));
         if ($opt->offsetExists('request')) $response->setRequest($opt->get('request'));
@@ -184,32 +188,32 @@ class Response extends Message implements ResponseInterface, Stringable {
      *
      * @return void
      */
-    protected function arrayToXml($data, SimpleXMLElement $xml_data): void {
+    protected function arrayToXml(array $data, SimpleXMLElement $xml_data): void {
         foreach($data as $key => $value) {
             if (is_array($value)) {
                 if (is_numeric($key)) $key = 'item' . $key;
                 $subnode = $xml_data->addChild($key);
                 $this->arrayToXml($value, $subnode);
             } else {
-                $xml_data->addChild("$key", htmlspecialchars("$value"));
+                $xml_data->addChild((string)$key, htmlspecialchars((string)$value));
             }
         }
     }
 
     /**
-     * add header
+     * Add a header to the request.
      *
-     * @param string $name
-     * @param mixed  $value
-     * @param bool   $replace
+     * @param string $name    The name of the header.
+     * @param mixed  $value   The value of the header.
+     * @param bool   $replace Optional flag to indicate whether to replace the existing value if the header already exists. Defaults to true.
      *
-     * @return Response
+     * @return self Returns the current instance for method chaining.
      */
     public function addHeader(string $name, mixed $value, bool $replace = true): self {
         $header = $this->getHeaderObject($name);
         $header->setValue($value, $replace);
         $this->headers[$header->key] = $header;
-        
+
         return $this;
     }
 
@@ -245,9 +249,6 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @param mixed $statusCode
      *
      * @return self
-     *
-     * @throws BadMethodCallException
-     * @throws UnexpectedValueException
      */
     public function setStatusCode(HttpStatus $statusCode): self {
         return $this->setStatus($statusCode);
@@ -268,6 +269,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @param string $body
      *
      * @return self
+     * @throws RuntimeException
      */
     public function setBody(string $body): self {
         $this->stream = new Stream($body);
@@ -278,9 +280,12 @@ class Response extends Message implements ResponseInterface, Stringable {
     /**
      * get body
      *
-     * @return string body
+     * @return null|string|array|SimpleXMLElement Get the body as an object.
+     *
+     * @throws JsonException
+     * @throws Exception
      */
-    public function getContents(): string {
+    public function getBodyObject(): null|string|array|SimpleXMLElement {
         $body = $this->getBody()
             ->getContents()
         ;
@@ -288,12 +293,9 @@ class Response extends Message implements ResponseInterface, Stringable {
             'application/json',
             '*/*',
         ]))
-            return Json::encode($body);
-        elseif (in_array($this->getHeaderLine('Content-Type'), ['application/xml'])) {
-            $xml = new SimpleXMLElement('<root/>');
-            $this->arrayToXml($body, $xml);
-
-            return $xml->asXML();
+            return Json::decode($body);
+        elseif ($this->getHeaderLine('Content-Type') === 'application/xml') {
+            return new SimpleXMLElement($body);
         }
 
         return $body;
@@ -314,7 +316,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @return bool
      */
     public function isForceDownload(): bool {
-        return $this->getHeaderLine('Content-Description') == 'File Transfer' ? true : false;
+        return $this->getHeaderLine('Content-Description') === 'File Transfer';
     }
 
     /**
@@ -323,7 +325,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @return bool
      */
     public function isThrottled(): bool {
-        return $this->_sleep > 0 ? true : false;
+        return $this->_sleep > 0;
     }
 
     /**
@@ -358,7 +360,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      *
      * This is a rough kb/s speed (But very rough!).
      *
-     * @param  $kbps
+     * @param int $kbps
      *
      * @return Response
      */
@@ -384,7 +386,7 @@ class Response extends Message implements ResponseInterface, Stringable {
     /**
      * gets download limit 0 = unlimited
      *
-     * This is a rough kb/s speed. But very rough
+     * This is a rough kb/s speed. But very rough.
      *
      * @return int kbSec
      */
@@ -413,9 +415,9 @@ class Response extends Message implements ResponseInterface, Stringable {
      * @param int         $speed    kbSec
      *
      * @return Response
-     *
-     * @throws UnexpectedValueException
-     * @throws BadMethodCallException
+     * @throws JsonException
+     * @throws RuntimeException
+     * @throws \Inane\Stdlib\Exception\RuntimeException
      */
     public function setFile(?string $src_file, bool $force = false, int $speed = 0): self {
         $file = new File($src_file);
@@ -435,7 +437,7 @@ class Response extends Message implements ResponseInterface, Stringable {
         $this->_downloadSize = $fileSize;
         $this->_downloadStart = 0;
 
-        if ($this->getRequest()->range != null) $this->updateRange();
+        if ($this->getRequest()->range !== null) $this->updateRange();
         $this->updateFileHeaders();
         if ($force) $this->forceDownload();
         $this->setBandwidth($speed);
@@ -448,7 +450,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      *
      * @return void
      */
-    protected function updateFileHeaders() {
+    protected function updateFileHeaders(): void {
         $this->addHeader('Accept-Ranges', 'bytes');
         $this->addHeader('Content-type', $this->_file->getMimetype() ?? 'application/octet-stream');
         $this->addHeader('Pragma', 'no-cache');
@@ -460,8 +462,11 @@ class Response extends Message implements ResponseInterface, Stringable {
      * update range headers for downloads
      *
      * @return void
+     * @throws JsonException
+     * @throws RuntimeException
+     * @throws \Inane\Stdlib\Exception\RuntimeException
      */
-    protected function updateRange() {
+    protected function updateRange(): void {
         $req = explode('=', $this->getRequest()->range);
         $ranges = explode(',', $req[1]);
         $ranges = explode('-', $ranges[0]);
@@ -469,11 +474,11 @@ class Response extends Message implements ResponseInterface, Stringable {
         $fileSize = $this->_file->getSize();
 
         $start = (int)$ranges[0];
-        $stop = (int)($ranges[1] == '' ? $fileSize - 1 : $ranges[1]);
+        $stop = (int)($ranges[1] === '' ? $fileSize - 1 : $ranges[1]);
 
         $this->_downloadSize = $stop - $start + 1;
         $this->_downloadStart = $start;
-        $downloadRange = "bytes {$start}-{$stop}/{$fileSize}";
+        $downloadRange = "bytes $start-$stop/$fileSize";
 
         $this->setStatus(HttpStatus::PartialContent);
         $this->addHeader('Content-Range', $downloadRange);
@@ -484,7 +489,7 @@ class Response extends Message implements ResponseInterface, Stringable {
      *
      * @return void
      */
-    protected function forceDownload() {
+    protected function forceDownload(): void {
         $this->addHeader('Content-Description', 'File Transfer');
         $this->addHeader('Content-Disposition', 'attachment; filename="' . $this->_file->getFilename() . '";');
         $this->addHeader('Content-Transfer-Encoding', 'binary');

@@ -28,20 +28,24 @@ use Inane\Http\Exception\PropertyException;
 use Inane\Http\Exception\RuntimeException;
 use Inane\Http\Request\AbstractRequest;
 use Inane\Stdlib\{
-    Exception\BadMethodCallException,
     Exception\JsonException,
-    Exception\UnexpectedValueException,
     Json,
     Options,
     String\Inflector};
 use Psr\Http\Message\UriInterface;
 use Stringable;
 
+use function apache_request_headers;
 use function array_any;
 use function array_keys;
+use function count;
+use function explode;
+use function file_get_contents;
 use function function_exists;
+use function http_build_query;
 use function in_array;
 use function is_null;
+use function str_replace;
 use function str_starts_with;
 use function strtolower;
 
@@ -125,7 +129,7 @@ class Request extends AbstractRequest implements Stringable {
      *
      * @throws PropertyException
      */
-    public function __get(string $property) {
+    public function __get(string $property): mixed {
         if (!$this->allowAllProperties && !in_array($property, $this->magicPropertiesAllowed, true)) throw new PropertyException($property, 10);
 
         // TODO: Temp only => to upgrade implementations
@@ -148,6 +152,7 @@ class Request extends AbstractRequest implements Stringable {
      *
      * @return void
      *
+     * @throws \Inane\Stdlib\Exception\RuntimeException
      * @throws RuntimeException|JsonException If an error occurs during request initialization.
      */
     public function __construct(
@@ -197,6 +202,7 @@ class Request extends AbstractRequest implements Stringable {
      * @return static A new instance initialised with the provided URL and headers.
      *
      * @throws RuntimeException|JsonException If the provided URL is invalid.
+     * @throws \Inane\Stdlib\Exception\RuntimeException
      */
     public static function fromUrl(string $url, array $headers = []): static {
         return new static(uri: $url, headers: $headers);
@@ -249,9 +255,7 @@ class Request extends AbstractRequest implements Stringable {
      * @param null|array          $headers An array of headers to set for the response. If null, default headers are used.
      *
      * @return Response The response object.
-     *
-     * @throws BadMethodCallException
-     * @throws UnexpectedValueException
+     * @throws RuntimeException
      */
     public function getResponse(?string $body = null, null|HttpStatus|int $status = null, ?array $headers = null): Response {
         if (!isset($this->response)) $this->response = new Response($body, $status ?? HttpStatus::Ok, $headers ?? ['Content-Type' => $this->getAccept()])->setRequest($this);
